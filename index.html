@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Суши Шторм — Доставка в Кабардинке | 8 (929) 854-11-44</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;--surface:#161616;--card:#1e1e1e;--border:rgba(255,255,255,0.07);
+  --gold:#f0b429;--gold2:#e09820;--red:#d63b2f;
+  --text:#f2ede4;--muted:#7a7570;--subtle:#2a2520;
+  --nav-h:68px;--radius:10px;
+}
+/* LIGHT THEME */
+body.light{
+  --bg:#f5f0e8;--surface:#fff;--card:#f0ebe0;--border:rgba(0,0,0,0.09);
+  --text:#1a1610;--muted:#7a7060;--subtle:#e8e0d0;
+}
+body.light .nav{background:rgba(245,240,232,0.96)}
+body.light .mobile-nav{background:var(--bg)}
+body.light .hero-right::before{background:linear-gradient(90deg,var(--bg) 0%,transparent 35%)}
+body.light .cart-count{background:#1a1610;color:var(--gold)}
+body.light .feat-card{background:#fff}
+body.light .dish-card{background:#fff}
+body.light .modal{background:#fff}
+body.light .form-input,body.light .form-select,body.light .form-textarea{background:#f5f0e8;color:var(--text)}
+body.light img{background:#e8e0d0}
+body.light .chat-bubble.bot{background:#fff;border:1px solid var(--border)}
+body.light .chat-input-row input{background:#f5f0e8;color:var(--text)}
+body.light .bonus-card{background:linear-gradient(135deg,#fff8e1,#fff3cd)}
+
+/* THEME TOGGLE */
+.theme-btn{background:var(--card);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.theme-btn:hover{border-color:rgba(240,180,41,.4)}
+
+/* CHAT WIDGET */
+.chat-fab{position:fixed;bottom:24px;right:24px;z-index:400;width:56px;height:56px;border-radius:50%;background:var(--gold);color:#000;border:none;cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(240,180,41,.45);transition:all .3s}
+.chat-fab:hover{transform:scale(1.08)}
+.chat-fab-badge{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;font-size:10px;font-weight:900;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;border:2px solid var(--bg)}
+.chat-fab-badge.show{display:flex}
+.chat-window{position:fixed;bottom:90px;right:24px;z-index:400;width:360px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,.4);display:flex;flex-direction:column;overflow:hidden;transform:scale(0.9) translateY(20px);opacity:0;pointer-events:none;transition:all .25s cubic-bezier(.34,1.56,.64,1);transform-origin:bottom right}
+.chat-window.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.chat-head{background:var(--gold);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.chat-head-avatar{width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:18px}
+.chat-head-info{flex:1}
+.chat-head-name{font-weight:700;font-size:14px;color:#000;line-height:1.2}
+.chat-head-status{font-size:11px;color:rgba(0,0,0,.55);display:flex;align-items:center;gap:4px;margin-top:2px}
+.online-dot{width:6px;height:6px;border-radius:50%;background:#2a7a2a}
+.chat-close-btn{background:none;border:none;color:rgba(0,0,0,.45);font-size:18px;cursor:pointer;line-height:1;padding:2px}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:260px;max-height:340px;scrollbar-width:thin}
+.chat-bubble{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;animation:bubbleIn .2s ease}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.chat-bubble.bot{background:var(--card);color:var(--text);border-radius:4px 12px 12px 12px;align-self:flex-start}
+.chat-bubble.user{background:var(--gold);color:#000;border-radius:12px 4px 12px 12px;align-self:flex-end;font-weight:500}
+.chat-bubble.typing{display:flex;gap:5px;align-items:center;padding:12px 16px;width:60px}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:typDot 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typDot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+.chat-sender{font-size:10px;color:var(--muted);margin-bottom:2px;padding:0 2px}
+.chat-time{font-size:10px;color:var(--muted);margin-top:3px;text-align:right}
+.chat-quick{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--border)}
+.chat-qbtn{font-size:11px;padding:5px 10px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.chat-qbtn:hover{border-color:var(--gold);color:var(--gold)}
+.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border)}
+.chat-input-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Manrope',sans-serif;outline:none;transition:border-color .2s}
+.chat-input-row input:focus{border-color:rgba(240,180,41,.5)}
+.chat-input-row input::placeholder{color:var(--muted)}
+.chat-send{background:var(--gold);color:#000;border:none;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+.chat-send:hover{background:var(--gold2)}
+
+/* BONUS */
+.bonus-card{background:linear-gradient(135deg,#1a1200,#2d1f00);border:1px solid rgba(240,180,41,.25);border-radius:12px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.bonus-card::after{content:'★';position:absolute;right:-8px;bottom:-18px;font-size:90px;opacity:.05;color:var(--gold);pointer-events:none}
+.bonus-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.bonus-amount{font-family:'Unbounded',sans-serif;font-size:30px;font-weight:900;color:var(--gold);line-height:1}
+.bonus-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.bonus-bar-wrap{margin-top:14px}
+.bonus-bar{background:var(--subtle);border-radius:4px;height:5px;overflow:hidden}
+.bonus-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .6s}
+.bonus-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px}
+.level-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px}
+.lvl-bronze{background:rgba(150,100,50,.15);color:#cd7f32;border:1px solid rgba(205,127,50,.3)}
+.lvl-silver{background:rgba(180,180,180,.1);color:#a8a8b8;border:1px solid rgba(160,160,180,.3)}
+.lvl-gold{background:rgba(240,180,41,.12);color:var(--gold);border:1px solid rgba(240,180,41,.3)}
+.bonus-history-title{font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;margin:14px 0 8px}
+.bh-item{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:7px 0;border-bottom:1px solid var(--border)}
+.bh-item:last-child{border:none}
+.bh-plus{color:#4caf50;font-weight:700}
+.bh-minus{color:var(--red);font-weight:700}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;line-height:1.6;overflow-x:hidden;transition:background .3s,color .3s}
+a{color:inherit;text-decoration:none}
+button{font-family:'Manrope',sans-serif;cursor:pointer;border:none;outline:none}
+img{display:block;max-width:100%;background:#1a1a1a}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);background:rgba(13,13,13,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px}
+.nav-logo{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;letter-spacing:.03em;white-space:nowrap;flex-shrink:0}
+.nav-logo span{color:var(--gold)}
+.nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-link{padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;transition:all .2s;background:none;border:none;cursor:pointer}
+.nav-link:hover,.nav-link.active{background:var(--card);color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-phone{font-size:12px;font-weight:600;color:var(--gold);white-space:nowrap}
+.cart-btn{position:relative;background:var(--gold);color:#000;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;white-space:nowrap}
+.cart-btn:hover{background:var(--gold2)}
+.cart-count{background:#000;color:var(--gold);font-size:11px;font-weight:900;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.burger{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px;flex-shrink:0}
+.user-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);font-size:13px;padding:9px 14px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.user-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+
+/* MOBILE NAV */
+.mobile-nav{position:fixed;inset:0;z-index:300;background:var(--bg);transform:translateX(-100%);transition:transform .3s ease;padding:calc(var(--nav-h) + 20px) 24px 40px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.mobile-nav.open{transform:none}
+.mobile-nav-link{padding:16px;border-radius:8px;font-size:15px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;text-align:left;transition:all .2s;border-bottom:1px solid var(--border);width:100%}
+.mobile-nav-link:hover{color:var(--text);background:var(--card)}
+.mobile-phone{margin-top:20px;text-align:center;color:var(--gold);font-size:20px;font-weight:700;font-family:'Unbounded',sans-serif;padding:16px}
+
+/* HERO */
+.hero{margin-top:var(--nav-h);min-height:calc(100vh - var(--nav-h));display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+.hero-left{padding:60px 48px;display:flex;flex-direction:column;justify-content:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(240,180,41,0.1);border:1px solid rgba(240,180,41,0.25);color:var(--gold);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:28px;width:fit-content}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:blink 1.8s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Unbounded',sans-serif;font-size:clamp(30px,4vw,58px);font-weight:900;line-height:1.06;letter-spacing:-.02em;margin-bottom:20px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero-sub{font-size:16px;line-height:1.75;color:rgba(242,237,228,.55);max-width:420px;font-weight:300;margin-bottom:36px}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:48px}
+.btn-gold{background:var(--gold);color:#000;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:.05em;padding:15px 28px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;display:inline-block;text-align:center}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--text);font-size:14px;font-weight:500;padding:14px 22px;border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:all .2s;display:inline-block;text-align:center}
+.btn-outline:hover{border-color:rgba(255,255,255,.25)}
+.hero-stats{display:flex;gap:32px}
+.hstat .num{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;color:var(--gold)}
+.hstat .lbl{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+.hero-right{position:relative;overflow:hidden}
+.hero-right::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 35%);z-index:1;pointer-events:none}
+.hero-img{width:100%;height:100%;object-fit:cover}
+.hero-kanji{position:absolute;bottom:20px;right:20px;font-size:160px;opacity:.04;color:#fff;z-index:0;line-height:1;pointer-events:none;user-select:none}
+
+/* SECTIONS */
+.section{padding:64px 20px}
+.section-inner{max-width:1200px;margin:0 auto}
+.sec-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sec-title{font-family:'Unbounded',sans-serif;font-size:clamp(20px,2.5vw,32px);font-weight:700;line-height:1.15;margin-bottom:32px}
+.features-bg{background:var(--surface)}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.feat-card{background:var(--surface);padding:28px 22px;transition:background .2s}
+.feat-card:hover{background:#1c1c1c}
+.feat-icon{width:48px;height:48px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.22);border-radius:10px}
+.feat-icon svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.feat-title{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;margin-bottom:8px;line-height:1.35}
+.feat-text{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* CATEGORY NAV */
+.cat-nav{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:32px;padding-bottom:4px}
+.cat-nav::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.cat-btn:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.cat-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+
+/* MENU GRID */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.dish-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .25s;display:flex;flex-direction:column}
+.dish-card:hover{transform:translateY(-4px);border-color:rgba(240,180,41,.3)}
+.dish-img-wrap{overflow:hidden;position:relative;height:190px;flex-shrink:0;background:#1a1a1a}
+.dish-img{width:100%;height:190px;object-fit:cover;transition:transform .4s}
+.dish-card:hover .dish-img{transform:scale(1.05)}
+.dish-badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;z-index:2}
+.badge-hit{background:#c8850a;color:#fff}
+.badge-new{background:#2a6e35;color:#fff}
+.dish-body{padding:16px;flex:1;display:flex;flex-direction:column}
+.dish-name{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;margin-bottom:6px;line-height:1.35}
+.dish-weight{font-size:11px;color:var(--muted);background:var(--subtle);padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:10px}
+.dish-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+.dish-price{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:900;color:var(--gold)}
+.add-dish-btn{background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.3);color:var(--gold);width:34px;height:34px;border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;line-height:1;flex-shrink:0}
+.add-dish-btn:hover,.add-dish-btn.added{background:var(--gold);color:#000}
+
+/* PROMO */
+.promo-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
+.promo-card{border-radius:var(--radius);padding:36px 32px;position:relative;overflow:hidden;border:1px solid var(--border)}
+.promo-card.dark{background:linear-gradient(135deg,#1a1200,#251a00)}
+.promo-card.red{background:linear-gradient(135deg,#1a0504,#2a0808)}
+.promo-deco{position:absolute;right:-10px;bottom:-20px;font-size:140px;opacity:.05;line-height:1;user-select:none}
+.promo-tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.promo-title{font-family:'Unbounded',sans-serif;font-size:clamp(16px,1.8vw,22px);font-weight:700;line-height:1.2;margin-bottom:10px}
+.promo-text{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:22px;max-width:340px}
+.promo-pill{display:inline-block;font-size:11px;font-weight:600;padding:6px 16px;border-radius:20px;border:1px solid rgba(240,180,41,.3);color:var(--gold);background:rgba(240,180,41,.08)}
+
+/* DELIVERY MAP */
+.delivery-inner{display:grid;grid-template-columns:1.3fr 1fr;gap:36px;align-items:start}
+#delivery-map{height:420px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.deliv-block{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px}
+.deliv-block-title{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;margin-bottom:14px}
+.deliv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.deliv-row:last-child{border:none}
+.deliv-row .lbl{color:var(--muted)}
+.deliv-row .val{font-weight:600}
+.deliv-row .free{color:#4caf50}
+.zone-legend{display:flex;flex-direction:column;gap:10px}
+.zone-item{display:flex;align-items:center;gap:10px;font-size:13px}
+.zone-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+
+/* CONTACTS */
+.contacts-inner{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.contact-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px}
+.contact-card-title{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:20px}
+.contact-row{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px}
+.contact-row:last-child{margin-bottom:0}
+.c-icon{width:38px;height:38px;background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.c-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.c-value{font-weight:600;font-size:14px}
+.c-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:28px 24px;transform:translateY(100%);transition:transform .35s cubic-bezier(.25,.8,.25,1)}
+.modal-overlay.open .modal{transform:none}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.modal-title{font-family:'Unbounded',sans-serif;font-size:17px;font-weight:700}
+.modal-tabs{display:flex;gap:4px}
+.modal-tab{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;background:none;border:none;color:var(--muted)}
+.modal-tab.active{background:var(--gold);color:#000}
+.modal-close{background:var(--card);border:1px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{color:var(--text)}
+
+/* CART */
+.cart-empty{text-align:center;padding:40px 0;color:var(--muted)}
+.cart-empty .icon{font-size:48px;margin-bottom:12px}
+.cart-items{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.cart-item{background:var(--card);border-radius:8px;padding:12px;display:flex;gap:12px;align-items:center}
+.cart-item-img{width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#222}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:13px;font-weight:600;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cart-item-price{font-size:13px;color:var(--gold);font-weight:700}
+.cart-item-controls{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.qty-btn{width:28px;height:28px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.qty-btn:hover{border-color:var(--gold);color:var(--gold)}
+.qty-num{font-size:13px;font-weight:700;min-width:18px;text-align:center}
+.cart-total{background:var(--card);border-radius:8px;padding:14px;margin-bottom:16px}
+.cart-total-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.cart-total-row.big{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;color:var(--gold);padding-top:10px;margin-top:8px;border-top:1px solid var(--border)}
+.free-delivery-bar{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#4caf50;margin-bottom:14px;text-align:center}
+
+/* ORDER & AUTH FORM */
+.form-body{display:flex;flex-direction:column;gap:13px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.form-input,.form-select,.form-textarea{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:14px;font-family:'Manrope',sans-serif;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:rgba(240,180,41,.5)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted)}
+.form-select option{background:var(--surface)}
+.form-textarea{resize:vertical;min-height:72px}
+.pay-methods{display:flex;gap:8px;flex-wrap:wrap}
+.pay-btn{flex:1;min-width:100px;padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;text-align:center}
+.pay-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.08)}
+.submit-btn{background:var(--gold);color:#000;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;padding:16px;border-radius:10px;border:none;cursor:pointer;width:100%;transition:all .2s;margin-top:6px}
+.submit-btn:hover{background:var(--gold2)}
+.form-divider{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
+.form-link{color:var(--gold);cursor:pointer;text-decoration:underline;font-size:13px;text-align:center;margin-top:4px}
+
+/* SUCCESS */
+.order-success{text-align:center;padding:16px 0}
+.success-icon{font-size:60px;margin-bottom:14px}
+.success-title{font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px}
+.success-text{color:var(--muted);font-size:14px;line-height:1.75}
+.success-num{font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--gold);margin:16px 0 4px}
+.success-num-lbl{font-size:12px;color:var(--muted)}
+
+/* USER MENU */
+.user-info{background:var(--card);border-radius:10px;padding:20px;margin-bottom:16px;text-align:center}
+.user-avatar{width:60px;height:60px;border-radius:50%;background:rgba(240,180,41,.15);border:2px solid rgba(240,180,41,.3);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px}
+.user-name{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px}
+.user-email{font-size:12px;color:var(--muted)}
+.user-orders{display:flex;flex-direction:column;gap:8px}
+.user-order-item{background:var(--card);border-radius:8px;padding:14px;border:1px solid var(--border)}
+.uoi-top{display:flex;justify-content:space-between;margin-bottom:6px}
+.uoi-num{font-size:12px;font-weight:700;color:var(--gold)}
+.uoi-date{font-size:11px;color:var(--muted)}
+.uoi-items{font-size:12px;color:var(--muted);margin-bottom:6px}
+.uoi-total{font-size:13px;font-weight:700}
+.uoi-status{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(76,175,80,.15);color:#4caf50}
+.logout-btn{width:100%;margin-top:16px;padding:12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{color:var(--red);border-color:var(--red)}
+
+/* FOOTER */
+.footer{background:var(--surface);border-top:1px solid var(--border);padding:32px 20px}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-logo{font-family:'Unbounded',sans-serif;font-size:12px;font-weight:900}
+.footer-logo span{color:var(--gold)}
+.footer-copy{font-size:12px;color:var(--muted)}
+.footer-links{display:flex;gap:18px}
+.footer-links a{font-size:12px;color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid rgba(240,180,41,.35);border-radius:10px;padding:12px 22px;font-size:13px;font-weight:600;z-index:600;transition:transform .3s;white-space:nowrap;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast span{color:var(--gold)}
+
+/* RESPONSIVE */
+@media(min-width:1024px){.nav-phone{display:block}}
+@media(max-width:960px){
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .promo-grid{grid-template-columns:1fr}
+  .delivery-inner{grid-template-columns:1fr}
+  .contacts-inner{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-phone{display:none!important}
+  .burger{display:block}
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-left{padding:36px 20px 32px}
+  .hero-right{height:260px}
+  .hero-stats{gap:18px}
+  .menu-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+  .dish-img-wrap,.dish-img{height:150px}
+  .form-row{grid-template-columns:1fr}
+  .modal{padding:22px 16px}
+}
+@media(max-width:480px){
+  .hero h1{font-size:28px}
+  .feat-grid{grid-template-columns:1fr}
+  .hero-btns{flex-direction:column}
+  .btn-gold,.btn-outline{width:100%;text-align:center;display:block}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">СУШИ <span>ШТОРМ</span></div>
+  <div class="nav-links">
+    <button class="nav-link" onclick="navScroll('menu-section')">Меню</button>
+    <button class="nav-link" onclick="navScroll('promo-section')">Акции</button>
+    <button class="nav-link" onclick="navScroll('delivery-section')">Доставка</button>
+    <button class="nav-link" onclick="navScroll('contacts-section')">Контакты</button>
+  </div>
+  <div class="nav-actions">
+    <span class="nav-phone">8 (929) 854-11-44</span>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Сменить тему">🌙</button>
+    <button class="user-btn" onclick="openUserModal()" id="userNavBtn">👤 Войти</button>
+    <button class="cart-btn" onclick="openCartModal()">
+      🛒 <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="burger" id="burgerBtn" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-link" onclick="navScroll('menu-section');toggleMobile()">🍣 Меню</button>
+  <button class="mobile-nav-link" onclick="navScroll('promo-section');toggleMobile()">🎁 Акции</button>
+  <button class="mobile-nav-link" onclick="navScroll('delivery-section');toggleMobile()">🚴 Доставка</button>
+  <button class="mobile-nav-link" onclick="navScroll('contacts-section');toggleMobile()">📞 Контакты</button>
+  <button class="mobile-nav-link" onclick="openUserModal();toggleMobile()">👤 Личный кабинет</button>
+  <button class="mobile-nav-link" onclick="openCartModal();toggleMobile()">🛒 Корзина (<span id="cartCountMobile">0</span>)</button>
+  <div class="mobile-phone">8 (929) 854-11-44</div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-badge"><span class="pulse"></span> Доставка в Кабардинке</div>
+    <h1>Японская кухня<br>с <em>душой</em><br>и вкусом</h1>
+    <p class="hero-sub">Роллы на 20% больше, пицца на 30% щедрее — без наценок и хитростей. Горячая доставка за 60 минут ежедневно.</p>
+    <div class="hero-btns">
+      <button class="btn-gold" onclick="navScroll('menu-section')">Смотреть меню →</button>
+      <a href="tel:89298541144" class="btn-outline">☎ Позвонить</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="num">+20%</div><div class="lbl">Размер роллов</div></div>
+      <div class="hstat"><div class="num">60 мин</div><div class="lbl">Доставка</div></div>
+      <div class="hstat"><div class="num">10–23</div><div class="lbl">Ежедневно</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img class="hero-img" src="https://kabardinka.sushi-storm.ru/image/cache/catalog/kabardinkaphoto26g/photo_2026-05-26_16-44-51-228x228.jpg" alt="Суши Шторм" style="height:100%;width:100%;object-fit:cover;filter:brightness(0.85)">
+    <div class="hero-kanji">嵐</div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section features-bg">
+  <div class="section-inner">
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 7.5v9M7.5 12h9" opacity="0.5"/></svg></div><div class="feat-title">Большие порции</div><div class="feat-text">Роллы +20%, пицца +30% — честный размер</div></div>
+      <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M13 2 4.5 13.5h6L11 22l8.5-11.5h-6L13 2z"/></svg></div><div class="feat-title">Быстрая доставка</div><div class="feat-text">~60 минут до вашей двери, горячим</div></div>
+      <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3.5 6 3 10.5L12 21l9-10.5C20.5 6 17 3 12 3z"/><circle cx="9" cy="9.5" r="0.8" fill="currentColor"/><circle cx="14.5" cy="8" r="0.8" fill="currentColor"/><circle cx="12" cy="13" r="0.8" fill="currentColor"/></svg></div><div class="feat-title">Пицца из Италии</div><div class="feat-text">Тонкое тесто по древним рецептам</div></div>
+      <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/><path d="M6.5 14.5h4"/></svg></div><div class="feat-title">Любая оплата</div><div class="feat-text">Карты, наличные, онлайн — как удобно</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="section" id="menu-section">
+  <div class="section-inner">
+    <div class="sec-label">Каталог</div>
+    <div class="sec-title">Меню</div>
+    <div class="cat-nav" id="catNav">
+      <button class="cat-btn active" onclick="filterMenu('all',this)">🍽 Все</button>
+      <button class="cat-btn" onclick="filterMenu('baked',this)">🔥 Запечённые</button>
+      <button class="cat-btn" onclick="filterMenu('cold',this)">❄️ Холодные роллы</button>
+      <button class="cat-btn" onclick="filterMenu('mini',this)">🥢 Мини роллы</button>
+      <button class="cat-btn" onclick="filterMenu('warm',this)">♨️ Тёплые роллы</button>
+      <button class="cat-btn" onclick="filterMenu('sets',this)">🎁 Наборы СЕТы</button>
+      <button class="cat-btn" onclick="filterMenu('pizza',this)">🍕 Пицца</button>
+      <button class="cat-btn" onclick="filterMenu('sushi',this)">🍣 Суши</button>
+      <button class="cat-btn" onclick="filterMenu('hot',this)">🍜 Горячие</button>
+      <button class="cat-btn" onclick="filterMenu('soup',this)">🥣 Супы</button>
+      <button class="cat-btn" onclick="filterMenu('salad',this)">🥗 Салаты</button>
+      <button class="cat-btn" onclick="filterMenu('kids',this)">🧒 Детям</button>
+    </div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<!-- PROMO -->
+<section class="section features-bg" id="promo-section">
+  <div class="section-inner">
+    <div class="sec-label">Акции</div>
+    <div class="sec-title">Выгода и подарки</div>
+    <div class="promo-grid">
+      <div class="promo-card dark">
+        <div class="promo-deco">誕</div>
+        <div class="promo-tag">⭐ Акция</div>
+        <div class="promo-title">Сет «Запечённый микс» в подарок на день рождения</div>
+        <div class="promo-text">Мы помним ваш праздник! Имениннику — сет «Запечённый микс» в подарок к заказу. Отмечайте вкусно с Суши Шторм!</div>
+        <div class="promo-pill">🎂 Подарок именинникам</div>
+      </div>
+      <div class="promo-card red">
+        <div class="promo-deco">贈</div>
+        <div class="promo-tag" style="color:#e8675a">🎁 Подарок</div>
+        <div class="promo-title">Подарок за первый заказ</div>
+        <div class="promo-text">Внутри вашего первого заказа — сюрприз от нас!</div>
+        <div class="promo-pill" style="border-color:rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)">Для новых клиентов</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DELIVERY -->
+<section class="section" id="delivery-section">
+  <div class="section-inner">
+    <div class="sec-label">Зона доставки</div>
+    <div class="sec-title">Доставляем по Кабардинке</div>
+    <div class="delivery-inner">
+      <div style="height:420px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;position:relative;background:#141a1a">
+        <svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <defs>
+            <radialGradient id="zone1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#4CAF50" stop-opacity="0.04"/>
+            </radialGradient>
+            <radialGradient id="zone2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#FF9800" stop-opacity="0.12"/>
+              <stop offset="100%" stop-color="#FF9800" stop-opacity="0.02"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Фон — море и суша -->
+          <rect width="600" height="420" fill="#0d1a1a"/>
+
+          <!-- Море (Чёрное море — снизу) -->
+          <path d="M0,300 Q80,280 150,295 Q220,310 300,300 Q380,290 460,305 Q530,315 600,300 L600,420 L0,420 Z" fill="#0a1520" opacity="0.9"/>
+          <path d="M0,320 Q100,305 200,318 Q300,330 400,315 Q500,302 600,320 L600,420 L0,420 Z" fill="#0c1f2e" opacity="0.7"/>
+
+          <!-- Береговая линия — текст -->
+          <text x="50" y="395" font-size="10" fill="rgba(100,160,200,0.4)" font-family="sans-serif">Чёрное море</text>
+
+          <!-- Улицы (схематично) -->
+          <g stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none">
+            <!-- горизонтальные -->
+            <line x1="0" y1="150" x2="600" y2="155"/>
+            <line x1="0" y1="200" x2="600" y2="198"/>
+            <line x1="0" y1="250" x2="600" y2="248"/>
+            <line x1="50" y1="120" x2="550" y2="118"/>
+            <line x1="80" y1="175" x2="520" y2="172"/>
+            <!-- вертикальные -->
+            <line x1="150" y1="80" x2="148" y2="310"/>
+            <line x1="250" y1="80" x2="248" y2="310"/>
+            <line x1="350" y1="80" x2="348" y2="310"/>
+            <line x1="450" y1="80" x2="448" y2="310"/>
+            <line x1="100" y1="100" x2="98" y2="300"/>
+            <line x1="200" y1="90" x2="198" y2="305"/>
+            <line x1="300" y1="90" x2="298" y2="300"/>
+            <line x1="400" y1="90" x2="398" y2="305"/>
+            <line x1="500" y1="100" x2="498" y2="300"/>
+            <!-- диагональные -->
+            <line x1="0" y1="220" x2="200" y2="180"/>
+            <line x1="400" y1="190" x2="600" y2="220"/>
+          </g>
+
+          <!-- Главная дорога -->
+          <path d="M0,230 Q150,215 300,225 Q450,235 600,220" stroke="rgba(255,255,255,0.12)" stroke-width="3" fill="none"/>
+          <text x="140" y="218" font-size="9" fill="rgba(255,255,255,0.25)" font-family="sans-serif">Геленджикское шоссе</text>
+
+          <!-- Зона 2 — пригород (оранжевая, большая) -->
+          <ellipse cx="300" cy="210" rx="230" ry="155" fill="url(#zone2)"/>
+          <ellipse cx="300" cy="210" rx="230" ry="155" fill="none" stroke="#FF9800" stroke-width="1.5" stroke-dasharray="8,5" opacity="0.5"/>
+
+          <!-- Зона 1 — Кабардинка (зелёная, малая) -->
+          <ellipse cx="300" cy="210" rx="130" ry="88" fill="url(#zone1)"/>
+          <ellipse cx="300" cy="210" rx="130" ry="88" fill="none" stroke="#4CAF50" stroke-width="2" opacity="0.7"/>
+
+          <!-- Блоки зданий (схематично) -->
+          <g fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="0.5">
+            <rect x="160" y="135" width="28" height="18" rx="2"/>
+            <rect x="200" y="130" width="22" height="15" rx="2"/>
+            <rect x="240" y="140" width="18" height="12" rx="2"/>
+            <rect x="310" y="133" width="25" height="16" rx="2"/>
+            <rect x="345" y="138" width="20" height="14" rx="2"/>
+            <rect x="165" y="165" width="30" height="20" rx="2"/>
+            <rect x="210" y="162" width="24" height="18" rx="2"/>
+            <rect x="270" y="160" width="28" height="18" rx="2"/>
+            <rect x="320" y="165" width="22" height="16" rx="2"/>
+            <rect x="360" y="160" width="26" height="20" rx="2"/>
+            <rect x="170" y="215" width="26" height="17" rx="2"/>
+            <rect x="215" y="212" width="20" height="14" rx="2"/>
+            <rect x="260" y="218" width="22" height="15" rx="2"/>
+            <rect x="330" y="210" width="28" height="18" rx="2"/>
+            <rect x="375" y="215" width="22" height="14" rx="2"/>
+            <rect x="120" y="175" width="22" height="14" rx="2"/>
+            <rect x="430" y="170" width="24" height="16" rx="2"/>
+            <rect x="410" y="200" width="20" height="13" rx="2"/>
+            <rect x="130" y="200" width="18" height="13" rx="2"/>
+          </g>
+
+          <!-- Метка ресторана -->
+          <g transform="translate(300,210)">
+            <!-- тень -->
+            <ellipse cx="0" cy="22" rx="12" ry="4" fill="rgba(0,0,0,0.4)"/>
+            <!-- пин -->
+            <path d="M0,-24 C-10,-24 -16,-18 -16,-10 C-16,2 0,20 0,20 C0,20 16,2 16,-10 C16,-18 10,-24 0,-24 Z" fill="#f0b429" stroke="#000" stroke-width="1.5"/>
+            <circle cx="0" cy="-10" r="6" fill="#000"/>
+          </g>
+
+          <!-- Подпись метки -->
+          <rect x="214" y="232" width="172" height="28" rx="6" fill="rgba(13,13,13,0.88)" stroke="rgba(240,180,41,0.35)" stroke-width="1"/>
+          <text x="300" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#f0b429" font-family="sans-serif">📍 Суши Шторм · Кабардинка</text>
+
+          <!-- Легенда -->
+          <rect x="14" y="14" width="175" height="76" rx="8" fill="rgba(13,13,13,0.88)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <circle cx="32" cy="38" r="7" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="1.5"/>
+          <text x="46" y="43" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Кабардинка — бесплатно</text>
+          <circle cx="32" cy="62" r="7" fill="rgba(255,152,0,0.15)" stroke="#FF9800" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <text x="46" y="67" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Пригород — 100 ₽</text>
+          <circle cx="32" cy="80" r="5" fill="#f0b429"/>
+          <text x="46" y="84" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Ресторан</text>
+
+          <!-- Компас -->
+          <g transform="translate(565,35)">
+            <circle r="18" fill="rgba(13,13,13,0.7)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <text x="0" y="-6" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.6)" font-family="sans-serif">С</text>
+            <text x="0" y="14" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">Ю</text>
+            <text x="-12" y="4" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">З</text>
+            <text x="12" y="4" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">В</text>
+            <line x1="0" y1="-12" x2="0" y2="-4" stroke="#f0b429" stroke-width="1.5"/>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <div class="deliv-block">
+          <div class="deliv-block-title">📦 Условия доставки</div>
+          <div class="deliv-row"><span class="lbl">Минимальный заказ</span><span class="val">500 ₽</span></div>
+          <div class="deliv-row"><span class="lbl">Доставка от 1000 ₽</span><span class="val free">Бесплатно</span></div>
+          <div class="deliv-row"><span class="lbl">Доставка до 1000 ₽</span><span class="val">100 ₽</span></div>
+          <div class="deliv-row"><span class="lbl">Время доставки</span><span class="val">~60 мин</span></div>
+          <div class="deliv-row"><span class="lbl">Работаем</span><span class="val">10:00 – 23:00</span></div>
+        </div>
+        <div class="deliv-block">
+          <div class="deliv-block-title">🗺 Зоны</div>
+          <div class="zone-legend">
+            <div class="zone-item"><div class="zone-dot" style="background:#4CAF50"></div>Кабардинка — бесплатно от 1000 ₽</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>Пригород — 100 ₽</div>
+          </div>
+        </div>
+        <div class="deliv-block" style="margin-bottom:0">
+          <a href="tel:89298541144" style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--gold);display:block;margin-bottom:6px">8 (929) 854-11-44</a>
+          <div style="font-size:12px;color:var(--muted)">Или оформите заказ через корзину на сайте</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTS -->
+<section class="section features-bg" id="contacts-section">
+  <div class="section-inner">
+    <div class="sec-label">Контакты</div>
+    <div class="sec-title">Свяжитесь с нами</div>
+    <div class="contacts-inner">
+      <div class="contact-card">
+        <div class="contact-card-title">📍 Кабардинка</div>
+        <div class="contact-row"><div class="c-icon">📞</div><div><div class="c-label">Телефон</div><div class="c-value">8 (929) 854-11-44</div><div class="c-sub">Ежедневно 10:00 – 23:00</div></div></div>
+        <div class="contact-row"><div class="c-icon">🕐</div><div><div class="c-label">Режим работы</div><div class="c-value">10:00 — 23:00</div><div class="c-sub">Без выходных</div></div></div>
+        <div class="contact-row"><div class="c-icon">📍</div><div><div class="c-label">Регион</div><div class="c-value">Кабардинка</div><div class="c-sub">Краснодарский край</div></div></div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-card-title">🌊 Геленджик — второй филиал</div>
+        <div class="contact-row"><div class="c-icon">🔗</div><div><div class="c-label">Сайт</div><a href="https://sushi-storm.ru" target="_blank" style="color:var(--gold);font-weight:600;font-size:14px">sushi-storm.ru</a><div class="c-sub">Страница геленджикского филиала</div></div></div>
+        <div class="contact-row"><div class="c-icon">ℹ️</div><div><div class="c-label">О нас</div><div class="c-value">Суши Шторм</div><div class="c-sub">Без лишней наценки — больше вкуса</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">СУШИ <span>ШТОРМ</span> · КАБАРДИНКА</div>
+    <div class="footer-links">
+      <a onclick="navScroll('menu-section')">Меню</a>
+      <a onclick="navScroll('delivery-section')">Доставка</a>
+      <a onclick="navScroll('contacts-section')">Контакты</a>
+    </div>
+    <div class="footer-copy">© 2025–2026 Суши Шторм. Ежедневно 10:00–23:00</div>
+  </div>
+</footer>
+
+<!-- UNIVERSAL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Корзина</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- CHAT FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()">
+  💬
+  <span class="chat-fab-badge" id="chatBadge">1</span>
+</button>
+
+<!-- CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-head">
+    <div class="chat-head-avatar">🍣</div>
+    <div class="chat-head-info">
+      <div class="chat-head-name">Поддержка Суши Шторм</div>
+      <div class="chat-head-status"><span class="online-dot"></span>Онлайн · отвечаем быстро</div>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-quick" id="chatQuick">
+    <button class="chat-qbtn" onclick="chatQuickSend('Статус моего заказа')">📦 Статус заказа</button>
+    <button class="chat-qbtn" onclick="chatQuickSend('Сколько ждать доставку?')">⏱ Время доставки</button>
+    <button class="chat-qbtn" onclick="chatQuickSend('Как использовать бонусы?')">⭐ Бонусы</button>
+    <button class="chat-qbtn" onclick="chatQuickSend('Хочу отменить заказ')">❌ Отменить заказ</button>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Напишите сообщение..." onkeydown="if(event.key==='Enter')sendChatMsg()">
+    <button class="chat-send" onclick="sendChatMsg()">➤</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Добавлено: <span id="toastName"></span></div>
+
+<script>
+const BASE = 'https://kabardinka.sushi-storm.ru/image/cache/catalog/';
+const BASE2 = 'https://kabardinka.sushi-storm.ru/image/cache/catalog/kabardinkaphoto26g/';
+
+const dishes = [
+  // ЗАПЕЧЁННЫЕ РОЛЛЫ
+  {id:1,cat:'baked',name:'Вулкан',desc:'6 шт.',price:420,weight:'160г',badge:'hit',img:BASE2+'photo_2026-05-26_16-44-51-228x228.jpg'},
+  {id:2,cat:'baked',name:'Дабл Фиш',desc:'8 шт.',price:669,weight:'270г',badge:'hit',img:BASE2+'photo_2026-05-26_16-45-07%282%29-228x228.jpg'},
+  {id:3,cat:'baked',name:'Запечённая Филадельфия',desc:'8 шт.',price:799,weight:'340г',badge:'hit',img:BASE2+'photo_2026-05-26_16-46-13-228x228.jpg'},
+  {id:4,cat:'baked',name:'Запечённый Краб',desc:'8 шт.',price:499,weight:'290г',badge:'hit',img:BASE2+'photo_2026-05-26_16-45-48-228x228.jpg'},
+  {id:5,cat:'baked',name:'Запечённый Лосось',desc:'8 шт.',price:599,weight:'290г',badge:'hit',img:BASE2+'photo_2026-05-26_16-46-57-228x228.jpg'},
+  {id:6,cat:'baked',name:'Запечённый Окунь Эби',desc:'',price:549,weight:'290г',badge:'hit',img:BASE2+'img_1459-228x228.jpg'},
+  {id:7,cat:'baked',name:'Запечённый Тунец',desc:'8 шт.',price:549,weight:'260г',badge:'hit',img:BASE2+'img_1459-228x228.jpg'},
+  // ХОЛОДНЫЕ РОЛЛЫ (МАКИ)
+  {id:10,cat:'cold',name:'Филадельфия Дуэт',desc:'Новинка',price:549,weight:'',badge:'new',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/img_8003-228x228.jpg'},
+  {id:11,cat:'cold',name:'Ролл Цыплёнок Блю Чиз',desc:'Новинка',price:499,weight:'',badge:'new',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/img_7886-228x228.jpg'},
+  {id:12,cat:'cold',name:'Ролл Икорный Краб',desc:'Новинка',price:499,weight:'',badge:'new',img:BASE2+'ikornyjkrab-228x228.png'},
+  {id:13,cat:'cold',name:'Эби Люкс',desc:'8 шт.',price:499,weight:'270г',badge:'hit',img:BASE2+'photo_2026-05-26_16-46-38-228x228.jpg'},
+  {id:14,cat:'cold',name:'Филадельфия Радужная',desc:'8 шт.',price:699,weight:'280г',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/kabardinkaphoto26g/img_2318-228x228.jpg'},
+  {id:15,cat:'cold',name:'Филадельфия с тунцом',desc:'8 шт.',price:599,weight:'280г',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/kabardinkaphoto26g/img_2321-228x228.jpg'},
+  {id:16,cat:'cold',name:'Магуро Шторм',desc:'',price:529,weight:'',img:BASE2+'magurostorm-228x228.png'},
+  // МИНИ РОЛЛЫ
+  {id:20,cat:'mini',name:'Мини роллы с лососем',desc:'',price:249,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/sushistorm/vulkan-128x128.jpg'},
+  // ТЁПЛЫЕ РОЛЛЫ
+  {id:25,cat:'warm',name:'Тёплый ролл',desc:'',price:349,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/sushistorm/vulkan-128x128.jpg'},
+  // НАБОРЫ СЕТЫ
+  {id:30,cat:'sets',name:'Сет Пикник',desc:'Новинка',price:1549,weight:'',badge:'new',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/img_8402-228x228.jpg'},
+  {id:31,cat:'sets',name:'Сет Нейросет',desc:'40 шт.',price:1399,weight:'1300г',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/screenshot_1-228x228.png'},
+  {id:32,cat:'sets',name:'Сет Шторм',desc:'Хит продаж',price:1980,weight:'',badge:'hit',img:BASE2+'photo_2026-05-26_16-44-51-228x228.jpg'},
+  // ПИЦЦА
+  {id:40,cat:'pizza',name:'Пицца 4 сезона 32см',desc:'32 см, 700 г',price:990,weight:'700г',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/2025/screenshot_6-228x228.png'},
+  {id:41,cat:'pizza',name:'Пицца Берлускони 32см',desc:'32 см, 700 г',price:890,weight:'700г',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/2025/screenshot_5-228x228.png'},
+  {id:42,cat:'pizza',name:'Пицца Маргарита',desc:'',price:690,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_pizza-228x228.jpg'},
+  // СУШИ
+  {id:50,cat:'sushi',name:'Нигири с лососем',desc:'',price:180,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_sushi-228x228.jpg'},
+  {id:51,cat:'sushi',name:'Острые суши',desc:'',price:190,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_sushi-228x228.jpg'},
+  {id:52,cat:'sushi',name:'Запечённые суши',desc:'',price:210,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_sushi-228x228.jpg'},
+  // ГОРЯЧИЕ
+  {id:60,cat:'hot',name:'Темпура с креветкой',desc:'',price:290,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_goryachie-228x228.jpg'},
+  {id:61,cat:'hot',name:'Мидии в соусе',desc:'',price:260,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_goryachie-228x228.jpg'},
+  // СУПЫ
+  {id:70,cat:'soup',name:'Мисо суп',desc:'',price:150,weight:'300мл',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_soup-228x228.jpg'},
+  {id:71,cat:'soup',name:'Том Ям',desc:'',price:280,weight:'350мл',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_soup-228x228.jpg'},
+  // САЛАТЫ
+  {id:80,cat:'salad',name:'Салат с морепродуктами',desc:'',price:320,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_salat-228x228.jpg'},
+  // ДЕТЯМ
+  {id:90,cat:'kids',name:'Детский набор',desc:'',price:490,weight:'',img:'https://kabardinka.sushi-storm.ru/image/cache/catalog/cat/cat_deti-228x228.jpg'},
+];
+
+let cart = [];
+let currentUser = null;
+
+// ─── NAVIGATION ───
+function navScroll(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+  window.scrollTo({top, behavior:'smooth'});
+}
+
+function toggleMobile() {
+  const nav = document.getElementById('mobileNav');
+  const btn = document.getElementById('burgerBtn');
+  const open = nav.classList.toggle('open');
+  btn.textContent = open ? '✕' : '☰';
+}
+
+// ─── MENU ───
+function renderMenu(cat) {
+  const grid = document.getElementById('menuGrid');
+  const list = cat === 'all' ? dishes : dishes.filter(d => d.cat === cat);
+  if (!list.length) { grid.innerHTML = '<p style="color:var(--muted);padding:20px 0">Блюда в этой категории появятся скоро</p>'; return; }
+  grid.innerHTML = list.map(d => `
+    <div class="dish-card">
+      <div class="dish-img-wrap">
+        <img class="dish-img" src="${d.img}" alt="${d.name}" loading="lazy" onerror="this.style.opacity=0.3">
+        ${d.badge ? `<span class="dish-badge badge-${d.badge}">${{hit:'Хит',new:'Новинка'}[d.badge]||''}</span>` : ''}
+      </div>
+      <div class="dish-body">
+        <div class="dish-name">${d.name}</div>
+        ${d.weight ? `<div class="dish-weight">${d.weight}</div>` : ''}
+        <div class="dish-footer">
+          <span class="dish-price">${d.price} ₽</span>
+          <button class="add-dish-btn" id="addbtn-${d.id}" onclick="addToCart(${d.id})">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterMenu(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMenu(cat);
+}
+
+// ─── CART ───
+function addToCart(id) {
+  const d = dishes.find(x => x.id === id);
+  const ex = cart.find(x => x.id === id);
+  if (ex) ex.qty++;
+  else cart.push({...d, qty:1});
+  updateCount();
+  showToast(d.name);
+  const btn = document.getElementById('addbtn-'+id);
+  if (btn) { btn.textContent='✓'; btn.classList.add('added'); setTimeout(()=>{btn.textContent='+';btn.classList.remove('added')},1200); }
+}
+
+function updateCount() {
+  const n = cart.reduce((s,x)=>s+x.qty,0);
+  document.getElementById('cartCount').textContent = n;
+  const m = document.getElementById('cartCountMobile');
+  if (m) m.textContent = n;
+}
+
+function changeQty(id, d) {
+  const it = cart.find(x=>x.id===id);
+  if (!it) return;
+  it.qty += d;
+  if (it.qty <= 0) cart = cart.filter(x=>x.id!==id);
+  updateCount();
+  renderCartContent();
+}
+
+// ─── MODAL ───
+function openCartModal() {
+  document.getElementById('modalTitle').textContent = '🛒 Корзина';
+  renderCartContent();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function renderCartContent() {
+  const el = document.getElementById('modalContent');
+  if (!cart.length) {
+    el.innerHTML = `<div class="cart-empty"><div class="icon">🛒</div><p>Корзина пуста</p><p style="font-size:12px;margin-top:8px;color:var(--muted)">Выберите блюда из меню</p></div>`;
+    return;
+  }
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const deliv = sub >= 1000 ? 0 : 100;
+  const total = sub + deliv;
+  const left = sub < 1000 ? 1000 - sub : 0;
+  el.innerHTML = `
+    ${left > 0 ? `<div class="free-delivery-bar">До бесплатной доставки ещё <b>${left} ₽</b></div>` : '<div class="free-delivery-bar">🎉 Доставка бесплатна!</div>'}
+    <div class="cart-items">
+      ${cart.map(c=>`
+        <div class="cart-item">
+          <img class="cart-item-img" src="${c.img}" alt="${c.name}" onerror="this.style.opacity=0.2">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${c.name}</div>
+            <div class="cart-item-price">${c.price*c.qty} ₽</div>
+          </div>
+          <div class="cart-item-controls">
+            <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+            <span class="qty-num">${c.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="cart-total">
+      <div class="cart-total-row"><span>Сумма</span><span>${sub} ₽</span></div>
+      <div class="cart-total-row"><span>Доставка</span><span>${deliv===0?'<span style="color:#4caf50">Бесплатно</span>':deliv+' ₽'}</span></div>
+      <div class="cart-total-row big"><span>Итого</span><span>${total} ₽</span></div>
+    </div>
+    <button class="submit-btn" onclick="showOrderForm()">Оформить заказ →</button>
+  `;
+}
+
+function showOrderForm() {
+  document.getElementById('modalTitle').textContent = '📋 Оформление заказа';
+  window._pay = 'card';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="form-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Имя</label><input class="form-input" id="fo-name" placeholder="Иван" type="text" value="${currentUser?currentUser.name:''}"></div>
+        <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" id="fo-phone" placeholder="+7 (___) ___-__-__" type="tel" value="${currentUser?currentUser.phone:''}"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Адрес доставки</label><input class="form-input" id="fo-addr" placeholder="ул. Садовая, д. 12" type="text"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Подъезд</label><input class="form-input" id="fo-entry" placeholder="1" type="text"></div>
+        <div class="form-group"><label class="form-label">Этаж / кв.</label><input class="form-input" id="fo-floor" placeholder="3, кв. 15" type="text"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Время доставки</label>
+        <select class="form-select" id="fo-time">
+          <option>Как можно скорее (~60 мин)</option>
+          <option>Через 1.5 часа</option>
+          <option>Через 2 часа</option>
+          <option>Указать время в комментарии</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Способ оплаты</label>
+        <div class="pay-methods">
+          <button class="pay-btn active" id="p-card" onclick="selPay('card')">💳 Карта онлайн</button>
+          <button class="pay-btn" id="p-cash" onclick="selPay('cash')">💵 Наличные</button>
+          <button class="pay-btn" id="p-term" onclick="selPay('term')">📱 Терминал</button>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="fo-comment" placeholder="Без острого, домофон не работает..."></textarea></div>
+      <button class="submit-btn" onclick="submitOrder()">Подтвердить заказ 🎉</button>
+    </div>
+  `;
+}
+
+function selPay(m) {
+  window._pay = m;
+  ['card','cash','term'].forEach(k=>{const b=document.getElementById('p-'+k);if(b)b.classList.toggle('active',k===m)});
+}
+
+function submitOrder() {
+  const name = document.getElementById('fo-name').value.trim();
+  const phone = document.getElementById('fo-phone').value.trim();
+  const addr = document.getElementById('fo-addr').value.trim();
+  if (!name || !phone || !addr) { alert('Заполните имя, телефон и адрес'); return; }
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const deliv = sub>=1000?0:100;
+  const ordNum = 'SS-' + Math.floor(Math.random()*9000+1000);
+  if (currentUser) {
+    currentUser.orders = currentUser.orders || [];
+    currentUser.orders.unshift({num:ordNum, date:'Только что', items:cart.map(c=>c.name).join(', '), total:sub+deliv, status:'Принят'});
+    saveUser();
+  }
+  document.getElementById('modalContent').innerHTML = `
+    <div class="order-success">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">Заказ принят!</div>
+      <div class="success-num">${ordNum}</div>
+      <div class="success-num-lbl">Номер вашего заказа</div>
+      <div class="success-text" style="margin-top:16px">
+        Спасибо, <b>${esc(name)}</b>!<br>
+        Заказ на <b>${sub+deliv} ₽</b> принят в обработку.<br>
+        Перезвоним на <b>${esc(phone)}</b> в течение 5 минут.<br><br>
+        Ожидайте доставку ~60 минут 🚴
+      </div>
+      <button class="submit-btn" style="margin-top:24px" onclick="closeModal()">Отлично!</button>
+    </div>
+  `;
+  cart = []; updateCount();
+}
+
+// ─── SECURITY UTILS ───
+// Экранирование HTML — защита от XSS
+function esc(str) {
+  return String(str ?? '')
+    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+    .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+}
+
+// SHA-256 хэш пароля с солью (Web Crypto API)
+async function hashPassword(password, salt) {
+  const data = new TextEncoder().encode(salt + ':' + password);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function genSalt() {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Валидация
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); }
+function validPhone(p) { return /^[\d\s\+\-\(\)]{10,18}$/.test(p); }
+
+// Rate limiting входа — блокировка после 5 неудачных попыток на 5 минут
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_LOCK_MS = 5 * 60 * 1000;
+
+function getLoginAttempts(email) {
+  return JSON.parse(localStorage.getItem('ss_la_' + email) || '{"count":0,"lockedUntil":0}');
+}
+function recordFailedLogin(email) {
+  const a = getLoginAttempts(email);
+  a.count++;
+  if (a.count >= LOGIN_MAX_ATTEMPTS) { a.lockedUntil = Date.now() + LOGIN_LOCK_MS; a.count = 0; }
+  localStorage.setItem('ss_la_' + email, JSON.stringify(a));
+}
+function clearLoginAttempts(email) { localStorage.removeItem('ss_la_' + email); }
+
+// ─── AUTH ───
+function openUserModal() {
+  if (currentUser) { showProfile(); }
+  else { showLogin(); }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function showLogin() {
+  document.getElementById('modalTitle').textContent = '👤 Вход';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="form-body">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="a-email" placeholder="ivan@mail.ru" type="email" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label">Пароль</label><input class="form-input" id="a-pass" placeholder="••••••••" type="password" autocomplete="current-password"></div>
+      <button class="submit-btn" onclick="doLogin()">Войти</button>
+      <div class="form-divider">или</div>
+      <div class="form-link" onclick="showRegister()">Зарегистрироваться →</div>
+    </div>
+  `;
+}
+
+function showRegister() {
+  document.getElementById('modalTitle').textContent = '📝 Регистрация';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="form-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Имя</label><input class="form-input" id="r-name" placeholder="Иван" type="text" maxlength="50"></div>
+        <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" id="r-phone" placeholder="+7..." type="tel" maxlength="18"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="r-email" placeholder="ivan@mail.ru" type="email" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label">Пароль</label><input class="form-input" id="r-pass" placeholder="Минимум 8 символов" type="password" autocomplete="new-password"></div>
+      <div class="form-group"><label class="form-label">Повторите пароль</label><input class="form-input" id="r-pass2" placeholder="••••••••" type="password" autocomplete="new-password"></div>
+      <div style="font-size:11px;color:var(--muted)">Пароль: минимум 8 символов, буквы и цифры</div>
+      <button class="submit-btn" onclick="doRegister()">Создать аккаунт</button>
+      <div class="form-link" onclick="showLogin()">← Уже есть аккаунт</div>
+    </div>
+  `;
+}
+
+async function doLogin() {
+  const email = document.getElementById('a-email').value.trim().toLowerCase();
+  const pass = document.getElementById('a-pass').value;
+  if (!email || !pass) { alert('Введите email и пароль'); return; }
+  if (!validEmail(email)) { alert('Некорректный email'); return; }
+
+  // Проверка блокировки
+  const attempts = getLoginAttempts(email);
+  if (attempts.lockedUntil > Date.now()) {
+    const mins = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
+    alert(`Слишком много попыток. Вход заблокирован на ${mins} мин.`);
+    return;
+  }
+
+  const saved = JSON.parse(localStorage.getItem('ss_user_' + email) || 'null');
+  if (!saved) { recordFailedLogin(email); alert('Неверный email или пароль'); return; }
+
+  const hash = await hashPassword(pass, saved.salt);
+  if (hash !== saved.passHash) {
+    recordFailedLogin(email);
+    const left = LOGIN_MAX_ATTEMPTS - getLoginAttempts(email).count;
+    alert(`Неверный email или пароль${left > 0 && left < 3 ? `. Осталось попыток: ${left}` : ''}`);
+    return;
+  }
+
+  clearLoginAttempts(email);
+  currentUser = saved;
+  localStorage.setItem('ss_current_email', email);
+  updateUserNav();
+  showProfile();
+}
+
+async function doRegister() {
+  const name = document.getElementById('r-name').value.trim();
+  const phone = document.getElementById('r-phone').value.trim();
+  const email = document.getElementById('r-email').value.trim().toLowerCase();
+  const pass = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+
+  if (!name || !email || !pass) { alert('Заполните все поля'); return; }
+  if (name.length < 2) { alert('Имя слишком короткое'); return; }
+  if (!validEmail(email)) { alert('Некорректный email'); return; }
+  if (phone && !validPhone(phone)) { alert('Некорректный телефон'); return; }
+  if (pass !== pass2) { alert('Пароли не совпадают'); return; }
+  if (pass.length < 8) { alert('Пароль минимум 8 символов'); return; }
+  if (!/[a-zA-Zа-яА-Я]/.test(pass) || !/\d/.test(pass)) { alert('Пароль должен содержать буквы и цифры'); return; }
+  if (localStorage.getItem('ss_user_' + email)) { alert('Аккаунт с таким email уже существует'); return; }
+
+  const salt = genSalt();
+  const passHash = await hashPassword(pass, salt);
+  currentUser = {name, phone, email, salt, passHash, orders:[], bonusPoints:0, bonusHistory:[]};
+  saveUser();
+  localStorage.setItem('ss_current_email', email);
+  updateUserNav();
+  showProfile();
+}
+
+function saveUser() {
+  if (currentUser) localStorage.setItem('ss_user_' + currentUser.email, JSON.stringify(currentUser));
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('ss_current_email');
+  document.getElementById('userNavBtn').textContent = '👤 Войти';
+  closeModal();
+}
+
+function updateUserNav() {
+  const btn = document.getElementById('userNavBtn');
+  if (currentUser) btn.textContent = '👤 ' + currentUser.name.split(' ')[0];
+  else btn.textContent = '👤 Войти';
+}
+
+function showProfile() {
+  document.getElementById('modalTitle').textContent = '👤 Личный кабинет';
+  const orders = (currentUser.orders || []).slice(0,5);
+  document.getElementById('modalContent').innerHTML = `
+    <div class="user-info">
+      <div class="user-avatar">👤</div>
+      <div class="user-name">${esc(currentUser.name)}</div>
+      <div class="user-email">${esc(currentUser.email)}</div>
+    </div>
+    <div style="font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;margin-bottom:12px">История заказов</div>
+    <div class="user-orders">
+      ${orders.length ? orders.map(o=>`
+        <div class="user-order-item">
+          <div class="uoi-top"><span class="uoi-num">${o.num}</span><span class="uoi-status">${o.status}</span></div>
+          <div class="uoi-date">${o.date}</div>
+          <div class="uoi-items">${esc(o.items)}</div>
+          <div class="uoi-total">${o.total} ₽</div>
+        </div>
+      `).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Заказов пока нет</div>'}
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Выйти из аккаунта</button>
+  `;
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+function showToast(name) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastName').textContent = name;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+
+// ─── THEME ───
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('ss_theme', isLight ? 'light' : 'dark');
+}
+(function initTheme() {
+  const t = localStorage.getItem('ss_theme');
+  if (t === 'light') {
+    document.body.classList.add('light');
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+})();
+
+// ─── CHAT ───
+const CHAT_BOT_NAME = 'Суши Шторм';
+let chatOpen = false;
+let chatHistory = []; // { role, text, time }
+
+// Заглушка — сюда подключишь Telegram webhook
+async function sendToOperator(text) {
+  // TODO: заменить на реальный запрос к боту
+  // await fetch('https://ваш-сервер/tg-webhook', {
+  //   method: 'POST',
+  //   headers: {'Content-Type':'application/json'},
+  //   body: JSON.stringify({ text, user: currentUser?.name || 'Гость', time: new Date().toISOString() })
+  // });
+  console.log('[TG заглушка] Сообщение оператору:', text);
+
+  // Пока возвращаем авто-ответ
+  return getAutoReply(text);
+}
+
+function getAutoReply(text) {
+  const t = text.toLowerCase();
+  if (t.includes('статус') || t.includes('заказ') || t.includes('где'))
+    return 'Ваш заказ принят и передан на кухню! Курьер выедет в течение 20–30 минут 🚴 Если хотите уточнить детали — позвоните: 8 (929) 854-11-44';
+  if (t.includes('доставк') || t.includes('ждать') || t.includes('сколько'))
+    return 'Среднее время доставки по Кабардинке — 60 минут. В час пик может быть чуть дольше. Следим за каждым заказом! ⏱';
+  if (t.includes('бонус') || t.includes('балл') || t.includes('скидк'))
+    return 'За каждый заказ вы получаете 5% бонусами от суммы. Бонусами можно оплатить до 30% следующего заказа. Посмотрите свой баланс в личном кабинете ⭐';
+  if (t.includes('отмен'))
+    return 'Для отмены заказа позвоните нам: 8 (929) 854-11-44. Отменить можно в течение 10 минут после оформления ❌';
+  if (t.includes('состав') || t.includes('ингред') || t.includes('аллерг'))
+    return 'Расскажите какое блюдо вас интересует — уточним состав! Также можно позвонить на кухню: 8 (929) 854-11-44 🍣';
+  if (t.includes('привет') || t.includes('здравств') || t.includes('добр'))
+    return 'Привет! 👋 Рады видеть вас в Суши Шторм. Чем можем помочь?';
+  if (t.includes('спасиб'))
+    return 'Пожалуйста! Будем рады снова видеть вас в Суши Шторм 🎉';
+  return 'Спасибо за обращение! Оператор ответит вам в ближайшее время. Срочные вопросы — по телефону: 8 (929) 854-11-44 📞';
+}
+
+function now() {
+  return new Date().toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'});
+}
+
+function appendBubble(text, role, senderLabel) {
+  const box = document.getElementById('chatMessages');
+  if (senderLabel) {
+    const lbl = document.createElement('div');
+    lbl.className = 'chat-sender';
+    lbl.textContent = senderLabel; // textContent — безопасно
+    box.appendChild(lbl);
+  }
+  const b = document.createElement('div');
+  b.className = 'chat-bubble ' + role;
+  b.innerHTML = esc(text).replace(/\n/g,'<br>'); // экранируем перед вставкой
+  const t = document.createElement('div');
+  t.className = 'chat-time';
+  t.textContent = now();
+  b.appendChild(t);
+  box.appendChild(b);
+  box.scrollTop = box.scrollHeight;
+  return b;
+}
+
+function showTyping() {
+  const box = document.getElementById('chatMessages');
+  const b = document.createElement('div');
+  b.className = 'chat-bubble bot typing';
+  b.id = 'typingIndicator';
+  b.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  box.appendChild(b);
+  box.scrollTop = box.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+async function sendChatMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  document.getElementById('chatQuick').style.display = 'none';
+
+  const userName = currentUser ? currentUser.name : 'Вы';
+  appendBubble(text, 'user', userName);
+  chatHistory.push({role:'user', text});
+
+  showTyping();
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+  hideTyping();
+
+  const reply = await sendToOperator(text);
+  appendBubble(reply, 'bot', CHAT_BOT_NAME);
+  chatHistory.push({role:'bot', text: reply});
+
+  // Показать badge если чат закрыт
+  if (!chatOpen) {
+    document.getElementById('chatBadge').classList.add('show');
+  }
+}
+
+function chatQuickSend(text) {
+  document.getElementById('chatInput').value = text;
+  sendChatMsg();
+}
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+  document.getElementById('chatFab').textContent = chatOpen ? '✕' : '💬';
+  if (chatOpen) {
+    document.getElementById('chatBadge').classList.remove('show');
+    if (chatHistory.length === 0) {
+      setTimeout(() => {
+        appendBubble('Привет! 👋 Я чат поддержки Суши Шторм.\n\nЗдесь вы можете узнать статус заказа, задать вопрос или получить помощь. Чем могу помочь?', 'bot', CHAT_BOT_NAME);
+      }, 300);
+    }
+    setTimeout(() => document.getElementById('chatInput').focus(), 350);
+  } else {
+    document.getElementById('chatFab').textContent = '💬';
+  }
+}
+
+// Показать badge через 5 сек после загрузки
+setTimeout(() => {
+  if (!chatOpen) document.getElementById('chatBadge').classList.add('show');
+}, 5000);
+
+// ─── BONUS SYSTEM ───
+function getBonusLevel(points) {
+  if (points >= 2000) return {name:'Золото', cls:'lvl-gold', icon:'🥇', next:null, nextAt:null};
+  if (points >= 500)  return {name:'Серебро', cls:'lvl-silver', icon:'🥈', next:'Золото', nextAt:2000};
+  return {name:'Бронза', cls:'lvl-bronze', icon:'🥉', next:'Серебро', nextAt:500};
+}
+
+function calcBonusFromOrder(total) {
+  return Math.floor(total * 0.05); // 5%
+}
+
+function addBonusToUser(points, description) {
+  if (!currentUser) return;
+  currentUser.bonusPoints = (currentUser.bonusPoints || 0) + points;
+  currentUser.bonusHistory = currentUser.bonusHistory || [];
+  currentUser.bonusHistory.unshift({ points, description, date: new Date().toLocaleDateString('ru') });
+  saveUser();
+}
+
+// ─── PROFILE — расширенный с бонусами ───
+function showProfile() {
+  document.getElementById('modalTitle').textContent = '👤 Личный кабинет';
+  const orders = (currentUser.orders || []).slice(0, 5);
+  const bonus = currentUser.bonusPoints || 0;
+  const lvl = getBonusLevel(bonus);
+  const nextPct = lvl.nextAt ? Math.min(100, Math.round(bonus / lvl.nextAt * 100)) : 100;
+  const bHistory = (currentUser.bonusHistory || []).slice(0, 5);
+
+  document.getElementById('modalContent').innerHTML = `
+    <div style="background:var(--card);border-radius:10px;padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(240,180,41,.12);border:2px solid rgba(240,180,41,.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👤</div>
+      <div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700">${esc(currentUser.name)}</div>
+        <div style="font-size:12px;color:var(--muted)">${esc(currentUser.email)}</div>
+        <div style="font-size:12px;color:var(--muted)">${esc(currentUser.phone || '')}</div>
+      </div>
+    </div>
+
+    <div class="bonus-card">
+      <div class="bonus-label">Бонусный счёт</div>
+      <div class="bonus-amount">${bonus.toLocaleString('ru')} ★</div>
+      <div class="bonus-sub">≈ ${bonus} ₽ к оплате (до 30% заказа)</div>
+      <div class="level-badge ${lvl.cls}">${lvl.icon} ${lvl.name}</div>
+      ${lvl.nextAt ? `
+        <div class="bonus-bar-wrap">
+          <div class="bonus-bar"><div class="bonus-bar-fill" style="width:${nextPct}%"></div></div>
+          <div class="bonus-bar-labels"><span>${bonus} ★</span><span>${lvl.nextAt} ★ → ${lvl.next}</span></div>
+        </div>` : '<div style="font-size:11px;color:var(--gold);margin-top:8px">🏆 Максимальный уровень!</div>'}
+    </div>
+
+    ${bHistory.length ? `
+      <div class="bonus-history-title">История бонусов</div>
+      ${bHistory.map(h => `
+        <div class="bh-item">
+          <span>${esc(h.description)}</span>
+          <span class="${h.points > 0 ? 'bh-plus' : 'bh-minus'}">${h.points > 0 ? '+' : ''}${h.points} ★</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);padding:0 0 4px;border-bottom:1px solid var(--border)">${h.date}</div>
+      `).join('')}
+    ` : ''}
+
+    <div style="font-family:'Unbounded',sans-serif;font-size:11px;font-weight:700;margin:16px 0 10px">История заказов</div>
+    <div>
+      ${orders.length ? orders.map(o => `
+        <div style="background:var(--card);border-radius:8px;padding:12px;margin-bottom:8px;border:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:12px;font-weight:700;color:var(--gold)">${o.num}</span>
+            <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(76,175,80,.15);color:#4caf50">${o.status}</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${o.date}</div>
+          <div style="font-size:12px;color:var(--muted)">${esc(o.items)}</div>
+          <div style="font-size:13px;font-weight:700;margin-top:6px">${o.total} ₽</div>
+        </div>
+      `).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Заказов пока нет</div>'}
+    </div>
+    <button style="width:100%;margin-top:14px;padding:12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s" onmouseover="this.style.color='#d63b2f';this.style.borderColor='#d63b2f'" onmouseout="this.style.color='';this.style.borderColor=''" onclick="doLogout()">Выйти из аккаунта</button>
+  `;
+}
+
+// Обновлённый submitOrder с начислением бонусов
+const _origSubmit = submitOrder;
+submitOrder = function() {
+  const name = document.getElementById('fo-name')?.value.trim();
+  const phone = document.getElementById('fo-phone')?.value.trim();
+  const addr = document.getElementById('fo-addr')?.value.trim();
+  if (!name || !phone || !addr) { alert('Заполните имя, телефон и адрес'); return; }
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const deliv = sub>=1000?0:100;
+  const total = sub + deliv;
+  const ordNum = 'SS-' + Math.floor(Math.random()*9000+1000);
+  const bonusEarned = calcBonusFromOrder(total);
+
+  if (currentUser) {
+    currentUser.orders = currentUser.orders || [];
+    currentUser.orders.unshift({num:ordNum, date:new Date().toLocaleDateString('ru'), items:cart.map(c=>c.name).join(', '), total, status:'Принят'});
+    addBonusToUser(bonusEarned, `Заказ ${ordNum}`);
+  }
+
+  // TODO: отправить заказ на сервер/Telegram
+  // await fetch('https://ваш-сервер/order', { method:'POST', body: JSON.stringify({ordNum, name, phone, addr, cart, total}) })
+
+  document.getElementById('modalContent').innerHTML = `
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:56px;margin-bottom:14px">🎉</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;margin-bottom:10px">Заказ принят!</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;color:var(--gold);margin:12px 0 2px">${ordNum}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Номер вашего заказа</div>
+      <div style="color:var(--muted);font-size:14px;line-height:1.75">
+        Спасибо, <b>${esc(name)}</b>!<br>
+        Заказ на <b>${total} ₽</b> принят.<br>
+        Перезвоним на <b>${esc(phone)}</b> в течение 5 минут.<br>
+        Ожидайте ~60 минут 🚴
+      </div>
+      ${currentUser ? `<div style="margin-top:16px;background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:12px;font-size:13px">⭐ Начислено <b style="color:var(--gold)">${bonusEarned} бонусов</b> на ваш счёт!</div>` : `<div style="margin-top:12px;font-size:12px;color:var(--muted)">Зарегистрируйтесь, чтобы накапливать бонусы!</div>`}
+      <button class="submit-btn" style="margin-top:20px" onclick="closeModal()">Отлично!</button>
+    </div>
+  `;
+  document.getElementById('modalTitle').textContent = '✅ Заказ оформлен';
+  cart = []; updateCount();
+};
+
+
+// Restore session
+const savedEmail = localStorage.getItem('ss_current_email');
+if (savedEmail) {
+  const u = JSON.parse(localStorage.getItem('ss_user_' + savedEmail) || 'null');
+  // Старые аккаунты (с открытым паролем) не восстанавливаем — нужно перерегистрироваться
+  if (u && u.passHash) { currentUser = u; updateUserNav(); }
+  else if (u && u.pass) { localStorage.removeItem('ss_user_' + savedEmail); localStorage.removeItem('ss_current_email'); }
+}
+</script>
+</body>
+</html>
