@@ -1121,7 +1121,7 @@ function showLogin() {
   document.getElementById('modalTitle').textContent = '👤 Вход';
   document.getElementById('modalContent').innerHTML = `
     <div class="form-body">
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="a-email" placeholder="ivan@mail.ru" type="email" autocomplete="email"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="a-email" placeholder="ivan@mail.ru" type="text" autocomplete="username"></div>
       <div class="form-group"><label class="form-label">Пароль</label><input class="form-input" id="a-pass" placeholder="••••••••" type="password" autocomplete="current-password"></div>
       <button class="submit-btn" onclick="doLogin()">Войти</button>
       <div class="form-divider">или</div>
@@ -1149,33 +1149,45 @@ function showRegister() {
 }
 
 async function doLogin() {
-  const email = document.getElementById('a-email').value.trim().toLowerCase();
+  const email = document.getElementById('a-email').value.trim();
   const pass = document.getElementById('a-pass').value;
   if (!email || !pass) { alert('Введите email и пароль'); return; }
-  if (!validEmail(email)) { alert('Некорректный email'); return; }
+
+  // ─── Спец-вход для сотрудников: режим планшета (киоск) ───
+  // Логин и пароль смени на свои. Этот вход ведёт в /kiosk.html
+  const ADMIN_LOGIN = 'admin';
+  const ADMIN_PASS = 'storm2026';
+  if (email.toLowerCase() === ADMIN_LOGIN && pass === ADMIN_PASS) {
+    sessionStorage.setItem('kiosk_ok', '1'); // киоск увидит и не спросит пароль повторно
+    window.location.href = '/kiosk.html';
+    return;
+  }
+
+  const emailLower = email.toLowerCase();
+  if (!validEmail(emailLower)) { alert('Некорректный email'); return; }
 
   // Проверка блокировки
-  const attempts = getLoginAttempts(email);
+  const attempts = getLoginAttempts(emailLower);
   if (attempts.lockedUntil > Date.now()) {
     const mins = Math.ceil((attempts.lockedUntil - Date.now()) / 60000);
     alert(`Слишком много попыток. Вход заблокирован на ${mins} мин.`);
     return;
   }
 
-  const saved = JSON.parse(localStorage.getItem('ss_user_' + email) || 'null');
-  if (!saved) { recordFailedLogin(email); alert('Неверный email или пароль'); return; }
+  const saved = JSON.parse(localStorage.getItem('ss_user_' + emailLower) || 'null');
+  if (!saved) { recordFailedLogin(emailLower); alert('Неверный email или пароль'); return; }
 
   const hash = await hashPassword(pass, saved.salt);
   if (hash !== saved.passHash) {
-    recordFailedLogin(email);
-    const left = LOGIN_MAX_ATTEMPTS - getLoginAttempts(email).count;
+    recordFailedLogin(emailLower);
+    const left = LOGIN_MAX_ATTEMPTS - getLoginAttempts(emailLower).count;
     alert(`Неверный email или пароль${left > 0 && left < 3 ? `. Осталось попыток: ${left}` : ''}`);
     return;
   }
 
-  clearLoginAttempts(email);
+  clearLoginAttempts(emailLower);
   currentUser = saved;
-  localStorage.setItem('ss_current_email', email);
+  localStorage.setItem('ss_current_email', emailLower);
   updateUserNav();
   showProfile();
 }
