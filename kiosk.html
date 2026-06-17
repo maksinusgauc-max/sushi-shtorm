@@ -173,7 +173,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 
 <script src="menu.js"></script>
 <script>
-const dishes = Array.isArray(window.MENU) ? window.MENU : [];
+function getDishes(){ return (window.MENU && window.MENU.length) ? window.MENU : []; }
 
 const CATS = [
   ['all','🍽 Всё'],['sets','🎁 Сеты'],['rolls','🌀 Роллы'],['baked','🔥 Запечённые'],
@@ -212,7 +212,7 @@ function renderCats(){
 }
 function setCat(id){ curCat=id; renderCats(); renderGrid(); document.querySelector('.k-menu-wrap').scrollTop=0; }
 function renderGrid(){
-  const list = curCat==='all'?dishes:dishes.filter(d=>d.cat===curCat);
+  const list = curCat==='all'?getDishes():getDishes().filter(d=>d.cat===curCat);
   document.getElementById('kGrid').innerHTML = list.map(d=>{
     const inCart = cart.find(c=>c.id===d.id);
     return `<div class="k-card">
@@ -233,7 +233,7 @@ function renderGrid(){
 
 // ─── CART ───
 function addCart(id){
-  const d=dishes.find(x=>x.id===id);
+  const d=getDishes().find(x=>x.id===id);
   const ex=cart.find(x=>x.id===id);
   if(ex)ex.qty++; else cart.push({...d,qty:1});
   renderGrid(); renderCart(); toast(d.name);
@@ -365,7 +365,7 @@ async function kSendChat(){
   box.appendChild(typing);box.scrollTop=box.scrollHeight;
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({messages:chatHistory,menu:dishes.map(d=>({name:d.name,cat:d.cat,price:d.price}))})});
+      body:JSON.stringify({messages:chatHistory,menu:getDishes().map(d=>({name:d.name,cat:d.cat,price:d.price}))})});
     const d=await r.json();
     typing.remove();
     if(d.reply){kBub(d.reply,'bot');chatHistory.push({role:'assistant',content:d.reply});}
@@ -384,8 +384,19 @@ function toast(name){
 }
 
 // INIT
-if(!dishes.length){document.getElementById('kGrid').innerHTML='<p style=\"color:var(--muted);padding:30px;text-align:center;grid-column:1/-1\">Меню не загрузилось. Обновите страницу.</p>';}
-renderCats();renderGrid();renderCart();
+function kInit(){
+  renderCats();renderCart();
+  if(getDishes().length){ renderGrid(); }
+  else {
+    var tries=0;
+    var t=setInterval(function(){
+      tries++;
+      if(getDishes().length){ clearInterval(t); renderGrid(); }
+      else if(tries>40){ clearInterval(t); document.getElementById('kGrid').innerHTML='<p style="color:var(--muted);padding:30px;text-align:center;grid-column:1/-1">Меню не загрузилось. Обновите страницу.</p>'; }
+    },100);
+  }
+}
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',kInit); } else { kInit(); }
 </script>
 </body>
 </html>

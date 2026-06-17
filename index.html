@@ -668,14 +668,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
 <script src="menu.js"></script>
 <script>
 
-const dishes = Array.isArray(window.MENU) ? window.MENU : [];
-if (!dishes.length) {
-  // menu.js не загрузился — покажем подсказку вместо пустого меню
-  window.addEventListener('DOMContentLoaded', () => {
-    const g = document.getElementById('menuGrid');
-    if (g) g.innerHTML = '<p style="color:var(--muted);padding:30px 0;grid-column:1/-1;text-align:center">Меню временно недоступно. Обновите страницу или позвоните: <a href="tel:89298541144" style="color:var(--gold)">8 (929) 854-11-44</a></p>';
-  });
-}
+function getDishes() { return (window.MENU && window.MENU.length) ? window.MENU : []; }
 
 let cart = [];
 const MIN_ORDER = 500;       // минимальная сумма заказа, ₽
@@ -702,7 +695,7 @@ function toggleMobile() {
 // ─── MENU ───
 function renderMenu(cat) {
   const grid = document.getElementById('menuGrid');
-  const list = cat === 'all' ? dishes : dishes.filter(d => d.cat === cat);
+  const list = cat === 'all' ? getDishes() : getDishes().filter(d => d.cat === cat);
   if (!list.length) { grid.innerHTML = '<p style="color:var(--muted);padding:20px 0">Блюда в этой категории появятся скоро</p>'; return; }
   grid.innerHTML = list.map(d => `
     <div class="dish-card">
@@ -723,7 +716,7 @@ function renderMenu(cat) {
 }
 
 function openDishModal(id) {
-  const d = dishes.find(x => x.id === id);
+  const d = getDishes().find(x => x.id === id);
   if (!d) return;
   document.getElementById('modalTitle').textContent = '';
   document.getElementById('modalContent').innerHTML = `
@@ -750,7 +743,7 @@ function filterMenu(cat, btn) {
 
 // ─── CART ───
 function addToCart(id) {
-  const d = dishes.find(x => x.id === id);
+  const d = getDishes().find(x => x.id === id);
   const ex = cart.find(x => x.id === id);
   if (ex) ex.qty++;
   else cart.push({...d, qty:1});
@@ -1370,7 +1363,7 @@ function saveAddress() {
 function repeatOrder(itemIds) {
   if (!Array.isArray(itemIds) || !itemIds.length) { alert('Состав этого заказа не сохранён'); return; }
   itemIds.forEach(rec => {
-    const d = dishes.find(x => x.id === rec.id);
+    const d = getDishes().find(x => x.id === rec.id);
     if (d) {
       const ex = cart.find(x => x.id === d.id);
       if (ex) ex.qty += rec.qty; else cart.push({...d, qty: rec.qty});
@@ -1453,7 +1446,31 @@ submitOrder = async function() {
 
 
 // ─── INIT ───
-renderMenu('all');
+function initMenu() {
+  // window.MENU мог ещё не загрузиться (menu.js грузится отдельным файлом)
+  if (window.MENU && window.MENU.length) {
+    renderMenu(currentCat || 'all');
+  } else {
+    // ждём загрузки menu.js, пробуем ещё несколько раз
+    let tries = 0;
+    const t = setInterval(function() {
+      tries++;
+      if (window.MENU && window.MENU.length) {
+        clearInterval(t);
+        renderMenu(currentCat || 'all');
+      } else if (tries > 40) { // ~4 сек
+        clearInterval(t);
+        var g = document.getElementById('menuGrid');
+        if (g) g.innerHTML = '<p style="color:var(--muted);padding:30px 0;grid-column:1/-1;text-align:center">Меню не загрузилось. Обновите страницу или позвоните: <a href="tel:89298541144" style="color:var(--gold)">8 (929) 854-11-44</a></p>';
+      }
+    }, 100);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMenu);
+} else {
+  initMenu();
+}
 
 // Restore session
 const savedEmail = localStorage.getItem('ss_current_email');
