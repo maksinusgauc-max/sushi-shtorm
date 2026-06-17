@@ -186,7 +186,7 @@ let cart = [];
 let curCat = 'all';
 let chatHistory = [];
 
-function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');}
+function esc(s){return String(s==null?'':s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split('"').join('&quot;');}
 
 // ─── LOGIN (спец-аккаунт киоска) ───
 const KIOSK_LOGIN = 'kiosk';

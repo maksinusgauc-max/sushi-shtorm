@@ -907,9 +907,9 @@ function submitOrder() {
 // ─── SECURITY UTILS ───
 // Экранирование HTML — защита от XSS
 function esc(str) {
-  return String(str ?? '')
-    .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-    .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+  return String(str == null ? '' : str)
+    .split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;')
+    .split('"').join('&quot;').split("'").join('&#39;');
 }
 
 // SHA-256 хэш пароля с солью (Web Crypto API)
@@ -1289,7 +1289,7 @@ function renderProfileTab() {
         <div style="font-size:12px;color:var(--muted)">${esc(o.items)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
           <span style="font-size:13px;font-weight:700">${o.total} ₽</span>
-          <button style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(240,180,41,.35);background:rgba(240,180,41,.08);color:var(--gold);cursor:pointer" onclick="repeatOrder(${JSON.stringify(o.itemIds || []).replaceAll('"','&quot;')})">↻ Повторить</button>
+          <button style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(240,180,41,.35);background:rgba(240,180,41,.08);color:var(--gold);cursor:pointer" onclick="repeatOrder(${JSON.stringify(o.itemIds || []).split('"').join('&quot;')})">↻ Повторить</button>
         </div>
       </div>
     `).join('');
