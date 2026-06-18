@@ -124,9 +124,38 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 
 @media(max-width:820px){
   .k-cats{width:140px}
-  .k-cart{display:none}
   .k-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  /* Корзина превращается в выдвижную панель справа */
+  .k-cart{
+    position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;z-index:300;
+    transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+    box-shadow:-8px 0 32px rgba(0,0,0,.4);
+  }
+  .k-cart.open{transform:translateX(0)}
+  /* Язычок-кнопка */
+  .k-cart-tab{
+    position:fixed;top:50%;right:0;transform:translateY(-50%);z-index:299;
+    background:var(--gold);color:#000;border:none;border-radius:12px 0 0 12px;
+    padding:16px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;
+    box-shadow:-4px 0 16px rgba(0,0,0,.3);font-weight:700;
+  }
+  .k-cart-tab .ico{font-size:22px}
+  .k-cart-tab .cnt{background:#000;color:var(--gold);font-size:12px;font-weight:900;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  /* Затемнение фона при открытой корзине */
+  .k-cart-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:298;opacity:0;pointer-events:none;transition:opacity .3s}
+  .k-cart-backdrop.open{opacity:1;pointer-events:auto}
+  /* Кнопка закрытия внутри корзины */
+  .k-cart-close{display:flex !important}
 }
+/* На десктопе язычок и кнопка закрытия скрыты */
+.k-cart-tab{display:none}
+.k-cart-backdrop{display:none}
+.k-cart-close{display:none;background:var(--card);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;align-items:center;justify-content:center}
+@media(max-width:820px){.k-cart-tab{display:flex}.k-cart-backdrop{display:block}}
+/* Кнопка очистки корзины */
+.k-clear-btn{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:10px;border-radius:8px;cursor:pointer;margin-top:8px;transition:all .2s}
+.k-clear-btn:hover{border-color:var(--red);color:var(--red)}
+.k-cart-head{display:flex;align-items:center;justify-content:space-between}
 </style>
 </head>
 <body>
@@ -155,8 +184,13 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 <div class="k-body">
   <div class="k-cats" id="kCats"></div>
   <div class="k-menu-wrap"><div class="k-grid" id="kGrid"></div></div>
-  <div class="k-cart">
-    <div class="k-cart-head">Корзина</div>
+  <div class="k-cart-backdrop" id="kCartBackdrop" onclick="toggleCart()"></div>
+  <button class="k-cart-tab" id="kCartTab" onclick="toggleCart()">
+    <span class="ico">🛒</span>
+    <span class="cnt" id="kCartTabCount">0</span>
+  </button>
+  <div class="k-cart" id="kCart">
+    <div class="k-cart-head">Корзина <button class="k-cart-close" onclick="toggleCart()">✕</button></div>
     <div class="k-cart-items" id="kCartItems"></div>
     <div class="k-cart-foot" id="kCartFoot"></div>
   </div>
@@ -276,6 +310,7 @@ function chQ(id,delta){
 function renderCart(){
   const items=document.getElementById('kCartItems');
   const foot=document.getElementById('kCartFoot');
+  updateCartTab();
   if(!cart.length){
     items.innerHTML='<div class="k-cart-empty">Корзина пуста.<br>Нажмите «+ В корзину» у блюда</div>';
     foot.innerHTML='<button class="k-checkout" disabled>Оформить</button>';
@@ -291,7 +326,29 @@ function renderCart(){
   foot.innerHTML=`
     <div class="k-tot-row"><span>Позиций</span><span>${cart.reduce((s,x)=>s+x.qty,0)}</span></div>
     <div class="k-tot-row big"><span>Итого</span><span>${sub} ₽</span></div>
-    <button class="k-checkout" onclick="openCheckout()">Оформить заказ</button>`;
+    <button class="k-checkout" onclick="openCheckout()">Оформить заказ</button>
+    <button class="k-clear-btn" onclick="clearCart()">🗑 Очистить корзину</button>`;
+}
+
+function updateCartTab(){
+  const n = cart.reduce((s,x)=>s+x.qty,0);
+  const c = document.getElementById('kCartTabCount');
+  if(c) c.textContent = n;
+}
+
+function toggleCart(){
+  const cart_el = document.getElementById('kCart');
+  const bd = document.getElementById('kCartBackdrop');
+  const open = cart_el.classList.toggle('open');
+  if(bd) bd.classList.toggle('open', open);
+}
+
+function clearCart(){
+  if(!cart.length) return;
+  if(confirm('Очистить всю корзину?')){
+    cart=[];
+    renderCart(); renderGrid();
+  }
 }
 
 // ─── CHECKOUT ───
@@ -358,6 +415,8 @@ async function submitKiosk(){
       <button class="k-checkout" style="margin-top:24px" onclick="kioskReset()">Новый заказ</button>
     </div>`;
   cart=[];renderCart();renderGrid();
+  var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
+  var bd=document.getElementById('kCartBackdrop'); if(bd)bd.classList.remove('open');
 }
 function kioskReset(){closeCheckout();}
 
