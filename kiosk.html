@@ -175,6 +175,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   <div class="k-logo">СУШИ <span>ШТОРМ</span> · Меню</div>
   <div class="k-head-right">
     <button class="k-theme" id="kThemeBtn" onclick="kToggleTheme()" title="Сменить тему">🌙</button>
+    <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
     <button class="k-chat-btn" onclick="toggleChat()">💬 Помощник по меню</button>
     <button class="k-exit" onclick="kioskLogout()">Выход</button>
   </div>
@@ -279,7 +280,7 @@ function renderGrid(){
   document.getElementById('kGrid').innerHTML = list.map(d=>{
     const inCart = cart.find(c=>c.id===d.id);
     return `<div class="k-card">
-      <img class="k-card-img" src="${d.img}" alt="${esc(d.name)}" loading="lazy" onerror="this.onerror=null;this.src=this.dataset.ph" data-ph="${d.ph||''}">
+      <img class="k-card-img" src="${d.img}" alt="${esc(d.name)}" loading="lazy" data-real="${d.img}" data-ph="${d.ph||''}" onerror="imgError(this)">
       <div class="k-card-body">
         <div class="k-card-name">${esc(d.name)}</div>
         <div class="k-card-desc">${esc(d.desc||'')}</div>
@@ -503,6 +504,45 @@ function preloadImages(){
   }
   // грузим по очереди, не все сразу — чтобы не перегрузить слабый планшет
   next();
+}
+
+// Принудительное обновление — чистит кэш и грузит свежую версию
+function kHardRefresh(){
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    navigator.serviceWorker.controller.postMessage('clearCache');
+  }
+  // чистим все кэши на всякий случай
+  if(window.caches && caches.keys){
+    caches.keys().then(function(keys){
+      return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+    }).then(function(){
+      location.reload(true);
+    });
+  } else {
+    location.reload(true);
+  }
+}
+
+// Обработка ошибки картинки: показываем заглушку, но запоминаем настоящий src,
+// чтобы перезагрузить когда интернет вернётся
+function imgError(img){
+  img.onerror = null;
+  if(img.dataset.ph) img.src = img.dataset.ph;
+  img.dataset.failed = '1';
+}
+
+// Когда интернет вернулся — пробуем перезагрузить все картинки, что не догрузились
+window.addEventListener('online', retryFailedImages);
+function retryFailedImages(){
+  var imgs = document.querySelectorAll('img[data-failed="1"]');
+  imgs.forEach(function(img){
+    var real = img.dataset.real;
+    if(real){
+      img.dataset.failed = '';
+      img.onerror = function(){ imgError(img); };
+      img.src = real + '?r=' + Date.now(); // обход кэша
+    }
+  });
 }
 
 // Service Worker — кэширует страницу и картинки на устройстве.

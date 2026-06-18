@@ -1,17 +1,15 @@
 // ═══════════════════════════════════════════════════════════
-//  Service Worker для киоска «Суши Шторм»
-//  Кэширует страницу, меню и картинки на планшете.
-//  После первой загрузки всё берётся из кэша — быстро и без падений.
+//  Service Worker для киоска «Суши Шторм» — v2
+//  Кэширует картинки, но НЕ кэширует битые/заглушки.
+//  Страница и menu.js всегда грузятся свежими (если есть сеть).
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'sushi-kiosk-v1';
+const CACHE = 'sushi-kiosk-v2';   // ← версия. Меняй цифру, чтобы сбросить кэш у всех
 
-// При установке — сразу активируемся
 self.addEventListener('install', function(e) {
-  self.skipWaiting();
+  self.skipWaiting();   // новая версия активируется сразу
 });
 
-// При активации — чистим старые версии кэша
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
@@ -23,34 +21,34 @@ self.addEventListener('activate', function(e) {
   );
 });
 
-// Стратегия:
-//  - картинки (.jpg/.png): сначала кэш, если нет — сеть + сохранить (cache-first)
-//  - страница, menu.js: сначала сеть (чтобы видеть обновления), если нет сети — кэш (network-first)
 self.addEventListener('fetch', function(e) {
   const url = e.request.url;
-  // только GET-запросы
   if (e.request.method !== 'GET') return;
-  // не трогаем API (заказы, чат) — они всегда через сеть
-  if (url.indexOf('/api/') !== -1) return;
+  if (url.indexOf('/api/') !== -1) return;  // API — всегда сеть
 
-  const isImage = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url);
+  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
 
   if (isImage) {
-    // CACHE-FIRST для картинок — главное для слабого планшета
+    // Картинки: сначала кэш, если нет — сеть. Кэшируем ТОЛЬКО успешные (status 200).
     e.respondWith(
       caches.open(CACHE).then(function(cache) {
         return cache.match(e.request).then(function(cached) {
           if (cached) return cached;
           return fetch(e.request).then(function(resp) {
-            if (resp && resp.status === 200) cache.put(e.request, resp.clone());
+            // кэшируем только реально загруженную картинку, не ошибку
+            if (resp && resp.status === 200 && resp.type !== 'opaque') {
+              cache.put(e.request, resp.clone());
+            }
             return resp;
-          }).catch(function() { return cached; });
+          }).catch(function() {
+            // нет сети и нет в кэше — пусть сработает onerror в html (покажет заглушку, но НЕ закэширует её)
+            return new Response('', { status: 404 });
+          });
         });
       })
     );
   } else {
-    // NETWORK-FIRST для страницы и menu.js — чтобы обновления подхватывались,
-    // но при обрыве сети отдаём из кэша (не падаем)
+    // Страница, menu.js, sw — СНАЧАЛА СЕТЬ (всегда свежее), кэш только как резерв при обрыве
     e.respondWith(
       fetch(e.request).then(function(resp) {
         if (resp && resp.status === 200) {
@@ -59,8 +57,19 @@ self.addEventListener('fetch', function(e) {
         }
         return resp;
       }).catch(function() {
-        return caches.match(e.request);
+        return caches.match(e.request).then(function(c) {
+          return c || new Response('Нет соединения', { status: 503 });
+        });
       })
     );
+  }
+});
+
+// Принудительный сброс кэша по команде со страницы
+self.addEventListener('message', function(e) {
+  if (e.data === 'clearCache') {
+    caches.delete(CACHE).then(function() {
+      self.registration.unregister();
+    });
   }
 });
