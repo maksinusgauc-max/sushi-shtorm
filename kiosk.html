@@ -415,16 +415,45 @@ function toast(name){
 // INIT
 function kInit(){
   renderCats();renderCart();
-  if(getDishes().length){ renderGrid(); }
+  if(getDishes().length){ renderGrid(); preloadImages(); }
   else {
     var tries=0;
     var t=setInterval(function(){
       tries++;
-      if(getDishes().length){ clearInterval(t); renderGrid(); }
+      if(getDishes().length){ clearInterval(t); renderGrid(); preloadImages(); }
       else if(tries>40){ clearInterval(t); document.getElementById('kGrid').innerHTML='<p style="color:var(--muted);padding:30px;text-align:center;grid-column:1/-1">Меню не загрузилось. Обновите страницу.</p>'; }
     },100);
   }
 }
+
+// Предзагрузка всех картинок в кэш — чтобы при прокрутке они уже были готовы
+// и не пропадали со временем на слабом планшете
+function preloadImages(){
+  var list = getDishes();
+  var i = 0;
+  function next(){
+    if(i >= list.length) return;
+    var d = list[i++];
+    if(d.img && d.img.indexOf('data:') !== 0){
+      var img = new Image();
+      img.onload = img.onerror = next;
+      img.src = d.img;
+    } else {
+      next();
+    }
+  }
+  // грузим по очереди, не все сразу — чтобы не перегрузить слабый планшет
+  next();
+}
+
+// Service Worker — кэширует страницу и картинки на устройстве.
+// После первой загрузки киоск работает быстро и не падает при перезагрузке.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  });
+}
+
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',kInit); } else { kInit(); }
 </script>
 </body>
