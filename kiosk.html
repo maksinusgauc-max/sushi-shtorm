@@ -155,7 +155,18 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 /* Кнопка очистки корзины */
 .k-clear-btn{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:10px;border-radius:8px;cursor:pointer;margin-top:8px;transition:all .2s}
 .k-clear-btn:hover{border-color:var(--red);color:var(--red)}
+.k-selffill{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;font-size:14px;color:var(--text);user-select:none}
+.k-selffill input{width:20px;height:20px;accent-color:var(--gold);cursor:pointer;flex-shrink:0}
 .k-cart-head{display:flex;align-items:center;justify-content:space-between}
+/* Приборы */
+.k-cutlery{display:flex;gap:8px;flex-wrap:wrap}
+.k-cut-btn{width:46px;height:46px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
+.k-cut-btn.active{background:var(--gold);color:#000;border-color:var(--gold)}
+.k-cut-input{width:60px;height:46px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:16px;font-weight:700;text-align:center;outline:none}
+.k-cut-input.active{border-color:var(--gold);color:var(--gold)}
+.k-cut-input:focus{border-color:var(--gold)}
+.k-check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer}
+.k-check input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
 </style>
 </head>
 <body>
@@ -176,6 +187,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   <div class="k-head-right">
     <button class="k-theme" id="kThemeBtn" onclick="kToggleTheme()" title="Сменить тему">🌙</button>
     <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
+    <button class="k-theme" onclick="location.href='/admin.html'" title="Админ-панель">⚙️</button>
     <button class="k-chat-btn" onclick="toggleChat()">💬 Помощник по меню</button>
     <button class="k-exit" onclick="kioskLogout()">Выход</button>
   </div>
@@ -220,7 +232,41 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 
 <script src="menu.js"></script>
 <script>
-function getDishes(){ return (window.MENU && window.MENU.length) ? window.MENU : []; }
+function getDishes(){
+  var base = (window.MENU && window.MENU.length) ? window.MENU : [];
+  if(!base.length) return base;
+  try {
+    var ovr = JSON.parse(localStorage.getItem('ss_admin_overrides') || '{}');
+    var order = JSON.parse(localStorage.getItem('ss_admin_order') || 'null');
+
+    // применяем переопределения цены/бейджа/состава и фильтруем скрытые
+    var applied = [];
+    base.forEach(function(d){
+      var o = ovr[d.id];
+      if(o && o.off) return; // скрыто — не показываем гостю
+      if(o){
+        applied.push(Object.assign({}, d, {
+          price: (o.price != null ? o.price : d.price),
+          badge: (o.badge !== undefined ? o.badge : d.badge),
+          desc:  (o.desc !== undefined ? o.desc : d.desc)
+        }));
+      } else {
+        applied.push(d);
+      }
+    });
+
+    // применяем порядок
+    if(order && order.length){
+      var byId = {};
+      applied.forEach(function(d){ byId[d.id] = d; });
+      var sorted = [];
+      order.forEach(function(id){ if(byId[id]){ sorted.push(byId[id]); delete byId[id]; } });
+      applied.forEach(function(d){ if(byId[d.id]) sorted.push(d); });
+      return sorted;
+    }
+    return applied;
+  } catch(e){ return base; }
+}
 
 const CATS = [
   ['all','🍽 Всё'],['sets','🎁 Сеты'],['rolls','🌀 Роллы'],['baked','🔥 Запечённые'],
@@ -353,9 +399,9 @@ function clearCart(){
 }
 
 // ─── CHECKOUT ───
-let _mode='delivery', _pay='card';
+let _mode='delivery', _pay='card', _cutlery=1, _noCutlery=false;
 function openCheckout(){
-  _mode='delivery'; _pay='card';
+  _mode='delivery'; _pay='card'; _cutlery=1; _noCutlery=false;
   document.getElementById('kModal').classList.add('open');
   renderCheckout();
 }
@@ -363,61 +409,125 @@ function renderCheckout(){
   const sub=cart.reduce((s,x)=>s+x.price*x.qty,0);
   document.getElementById('kModalContent').innerHTML=`
     <h2>Оформление заказа <button onclick="closeCheckout()">✕</button></h2>
+
     <div class="k-seg">
       <button class="${_mode==='delivery'?'active':''}" onclick="setMode('delivery')">🚴 Доставка</button>
       <button class="${_mode==='pickup'?'active':''}" onclick="setMode('pickup')">🥡 Самовывоз</button>
     </div>
-    <div class="k-field"><label>Имя</label><input id="ko-name" placeholder="Иван"></div>
-    <div class="k-field"><label>Телефон</label><input id="ko-phone" type="tel" placeholder="+7..."></div>
+
+    <div class="k-field"><label>Телефон <span style="color:var(--red)">*</span></label><input id="ko-phone" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__"></div>
+
+    <div class="k-field"><label>Имя <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-name" placeholder="Иван"></div>
+
     ${_mode==='delivery'?`
-      <div class="k-field"><label>Адрес доставки</label><input id="ko-addr" placeholder="ул. Садовая, д. 12, кв. 5"></div>
-    `:`
-      <div class="k-field" style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:10px;padding:12px 14px;color:var(--gold);font-size:13px">🥡 Самовывоз: Кабардинка. Мы позвоним, когда заказ будет готов</div>
-    `}
+      <div class="k-field"><label>Адрес доставки <span style="color:var(--red)">*</span></label><input id="ko-addr" placeholder="ул. Садовая, д. 12, кв. 5"></div>
+    `:''}
+
+    <div class="k-field">
+      <label>Количество приборов <span style="color:var(--red)">*</span></label>
+      <div class="k-cutlery" style="${_noCutlery?'opacity:.4;pointer-events:none':''}">
+        ${[1,2,3,4,5,6].map(n=>`<button class="k-cut-btn ${!_noCutlery&&_cutlery===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
+        <input class="k-cut-input ${!_noCutlery&&![1,2,3,4,5,6].includes(_cutlery)?'active':''}" id="ko-cutlery-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${![1,2,3,4,5,6].includes(_cutlery)?_cutlery:''}" oninput="setCutleryCustom(this.value)">
+      </div>
+      <label class="k-check" style="margin-top:10px">
+        <input type="checkbox" id="ko-nocutlery" ${_noCutlery?'checked':''} onchange="toggleNoCutlery()">
+        <span>Без приборов</span>
+      </label>
+    </div>
+
     <div class="k-field"><label>Способ оплаты</label>
       <div class="k-seg">
         <button class="${_pay==='card'?'active':''}" onclick="setPay('card')">💳 Карта</button>
         <button class="${_pay==='cash'?'active':''}" onclick="setPay('cash')">💵 Наличные</button>
       </div>
     </div>
-    <div class="k-field"><label>Комментарий</label><input id="ko-comment" placeholder="Без острого..."></div>
+
+    <div class="k-field"><label>Предзаказ ко времени <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-preorder" type="time" placeholder="--:--"></div>
+
+    <div class="k-field"><label>Комментарий <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-comment" placeholder="Без острого, домофон не работает..."></div>
+
     <div class="k-tot-row big" style="margin-bottom:12px"><span>Итого</span><span>${sub} ₽</span></div>
     <button class="k-checkout" onclick="submitKiosk()">Подтвердить заказ 🎉</button>
   `;
 }
-function setMode(m){_mode=m;renderCheckout();}
-function setPay(p){_pay=p;renderCheckout();}
-function closeCheckout(){document.getElementById('kModal').classList.remove('open');}
+function setMode(m){ _mode=m; renderCheckout(); }
+function setPay(p){ _pay=p; renderCheckout(); }
+function setCutlery(n){ _cutlery=n; _noCutlery=false; renderCheckout(); }
+function setCutleryCustom(v){
+  var n=parseInt(v,10);
+  if(n>0){ _cutlery=n; _noCutlery=false; }
+  // не перерисовываем целиком, чтобы не сбить фокус с поля
+  document.querySelectorAll('.k-cut-btn').forEach(function(b){ b.classList.remove('active'); });
+}
+function toggleNoCutlery(){ _noCutlery=document.getElementById('ko-nocutlery').checked; renderCheckout(); }
+function closeCheckout(){ document.getElementById('kModal').classList.remove('open'); }
+
+function validKioskPhone(p){
+  var digits=(p||'').replace(/\D/g,'');
+  return digits.length>=10;
+}
 
 async function submitKiosk(){
-  const name=document.getElementById('ko-name').value.trim();
-  const phone=document.getElementById('ko-phone').value.trim();
-  const addr=_mode==='delivery'?(document.getElementById('ko-addr')?.value.trim()):'Самовывоз';
-  const comment=document.getElementById('ko-comment').value.trim();
-  if(!name||!phone){alert('Укажите имя и телефон');return;}
-  if(_mode==='delivery'&&!addr){alert('Укажите адрес доставки');return;}
+  const phone=(document.getElementById('ko-phone')?.value||'').trim();
+  const name=(document.getElementById('ko-name')?.value||'').trim();
+  const comment=(document.getElementById('ko-comment')?.value||'').trim();
+  const preorder=(document.getElementById('ko-preorder')?.value||'').trim();
+  let addr='';
+  if(_mode==='delivery') addr=(document.getElementById('ko-addr')?.value||'').trim();
+
+  // Валидация
+  if(!validKioskPhone(phone)){ alert('Укажите корректный телефон'); return; }
+  if(_mode==='delivery' && !addr){ alert('Укажите адрес доставки'); return; }
+
   const sub=cart.reduce((s,x)=>s+x.price*x.qty,0);
-  let ordNum=null,sent=false;
+
+  // Приборы
+  let cutleryText;
+  if(_noCutlery) cutleryText='без приборов';
+  else cutleryText=_cutlery+' '+persons(_cutlery);
+
+  // Примечание для ФронтПада
+  let d=[];
+  d.push(_mode==='pickup'?'🥡 САМОВЫВОЗ':'🚴 ДОСТАВКА');
+  d.push('Приборы: '+cutleryText);
+  d.push('Оплата: '+(_pay==='card'?'карта':'наличные'));
+  if(preorder) d.push('⏰ Предзаказ к '+preorder);
+  if(comment) d.push('Коммент: '+comment);
+  d.push('— заказ с планшета в зале');
+
+  let ordNum=null;
   try{
     const r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,phone,street:addr||'Самовывоз',
-        descr:`${_mode==='pickup'?'САМОВЫВОЗ. ':''}${comment?comment+'. ':''}Оплата: ${_pay==='card'?'карта':'наличные'}. С планшета в зале.`,
-        items:cart.map(c=>({article:c.article,qty:c.qty}))})});
-    const d=await r.json();
-    if(d.ok){ordNum=d.order_number;sent=true;}
+      body:JSON.stringify({
+        name: name||'Гость (планшет)',
+        phone: phone,
+        street: addr||(_mode==='pickup'?'Самовывоз':'уточнить'),
+        descr: d.join('. '),
+        items: cart.map(c=>({article:c.article,qty:c.qty}))
+      })});
+    const j=await r.json();
+    if(j.ok){ ordNum=j.order_number; }
   }catch(e){}
-  if(!ordNum)ordNum='SS-'+Math.floor(Math.random()*9000+1000);
+  if(!ordNum) ordNum='SS-'+Math.floor(Math.random()*9000+1000);
+
   document.getElementById('kModalContent').innerHTML=`
     <div style="text-align:center;padding:20px 0">
       <div style="font-size:60px">🎉</div>
       <div style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin:12px 0">Заказ принят!</div>
       <div style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--gold)">№ ${esc(String(ordNum))}</div>
-      <div style="color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7">Спасибо, ${esc(name)}!<br>${_mode==='pickup'?'Мы позвоним, когда заказ будет готов':'Ожидайте доставку ~60 минут'} 🍣</div>
+      <div style="color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7">${name?'Спасибо, '+esc(name)+'!<br>':''}${_mode==='pickup'?'Мы позвоним, когда заказ будет готов':'Оператор перезвонит для подтверждения'} 🍣</div>
       <button class="k-checkout" style="margin-top:24px" onclick="kioskReset()">Новый заказ</button>
     </div>`;
   cart=[];renderCart();renderGrid();
   var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
   var bd=document.getElementById('kCartBackdrop'); if(bd)bd.classList.remove('open');
+}
+function persons(n){
+  n=Math.abs(n)%100; var n1=n%10;
+  if(n>10&&n<20) return 'персон';
+  if(n1>1&&n1<5) return 'персоны';
+  if(n1===1) return 'персона';
+  return 'персон';
 }
 function kioskReset(){closeCheckout();}
 
