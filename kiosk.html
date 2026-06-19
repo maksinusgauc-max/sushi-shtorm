@@ -167,6 +167,37 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 .k-cut-input:focus{border-color:var(--gold)}
 .k-check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer}
 .k-check input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
+
+/* ── Портретный планшет-киоск (≈610×840): 2 крупные колонки, компактная шапка ── */
+.k-hide-narrow{display:inline}
+@media(max-width:680px){
+  /* Шапка: всё в один ряд, текст-подписи прячем, кнопки делаем иконками */
+  .k-hide-narrow{display:none}
+  .k-head{padding:12px 14px}
+  .k-logo{font-size:15px}
+  .k-head-right{gap:7px}
+  .k-theme{width:42px;height:42px;font-size:17px}
+  .k-chat-btn{padding:0;width:42px;height:42px;justify-content:center;gap:0;font-size:17px}
+  .k-exit{padding:10px 12px;font-size:12px}
+
+  /* Левый список категорий — уже, но читаемо, с переносом длинных названий */
+  .k-cats{width:122px;padding:10px 8px}
+  .k-cat{font-size:13px;padding:12px 10px;line-height:1.25;margin-bottom:3px}
+
+  /* Сетка: ровно 2 колонки, крупные фото */
+  .k-menu-wrap{padding:14px}
+  .k-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .k-card-img{height:185px}
+  .k-card-body{padding:12px}
+  .k-card-name{font-size:14px;margin-bottom:5px}
+  .k-card-desc{font-size:11.5px;line-height:1.45;margin-bottom:9px}
+  .k-price{font-size:17px}
+  .k-add{padding:9px 12px;font-size:13px}
+  .k-qbtn{width:22px;height:22px}
+
+  /* Корзина — выезжающая панель сбоку */
+  .k-cart{width:300px;max-width:88vw}
+}
 </style>
 </head>
 <body>
@@ -183,12 +214,12 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 
 <!-- HEADER -->
 <div class="k-head">
-  <div class="k-logo">СУШИ <span>ШТОРМ</span> · Меню</div>
+  <div class="k-logo">СУШИ <span>ШТОРМ</span><span class="k-hide-narrow"> · Меню</span></div>
   <div class="k-head-right">
     <button class="k-theme" id="kThemeBtn" onclick="kToggleTheme()" title="Сменить тему">🌙</button>
     <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
     <button class="k-theme" onclick="location.href='/admin.html'" title="Админ-панель">⚙️</button>
-    <button class="k-chat-btn" onclick="toggleChat()">💬 Помощник по меню</button>
+    <button class="k-chat-btn" onclick="toggleChat()">💬<span class="k-hide-narrow"> Помощник по меню</span></button>
     <button class="k-exit" onclick="kioskLogout()">Выход</button>
   </div>
 </div>
