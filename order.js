@@ -16,16 +16,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, phone, street, home, apart, pod, et, descr, items } = req.body || {};
+    const { source, bare, name, phone, street, home, apart, pod, et, descr, items } = req.body || {};
+    const isKiosk = source === 'kiosk';
 
     // ── Валидация на сервере (браузеру не доверяем) ──
-    if (!name || !phone || !street || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Некорректные данные заказа' });
+    // Позиции обязательны всегда
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Корзина пуста' });
     }
     if (items.length > 50) {
       return res.status(400).json({ error: 'Слишком много позиций' });
     }
-    if (!/^[\d\s+\-()]{10,18}$/.test(String(phone))) {
+    // Заказ с сайта — данные клиента обязательны.
+    // Заказ с киоска (в зале) — допускаем «голый» заказ: имя/телефон/адрес заполнят вручную в кассе.
+    if (!isKiosk) {
+      if (!name || !phone || !street) {
+        return res.status(400).json({ error: 'Некорректные данные заказа' });
+      }
+      if (!/^[\d\s+\-()]{10,18}$/.test(String(phone))) {
+        return res.status(400).json({ error: 'Некорректный телефон' });
+      }
+    } else if (phone && !/^[\d\s+\-()]{10,18}$/.test(String(phone))) {
       return res.status(400).json({ error: 'Некорректный телефон' });
     }
 
@@ -41,9 +52,9 @@ export default async function handler(req, res) {
       params.append(`product_kol[${i}]`, String(qty));
     });
 
-    params.append('name',   String(name).slice(0, 100));
-    params.append('phone',  String(phone).slice(0, 20));
-    params.append('street', String(street).slice(0, 150));
+    if (name)   params.append('name',   String(name).slice(0, 100));
+    if (phone)  params.append('phone',  String(phone).slice(0, 20));
+    if (street) params.append('street', String(street).slice(0, 150));
     if (home)  params.append('home',  String(home).slice(0, 20));
     if (apart) params.append('apart', String(apart).slice(0, 20));
     if (pod)   params.append('pod',   String(pod).slice(0, 10));

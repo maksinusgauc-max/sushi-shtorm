@@ -168,6 +168,15 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 .k-check{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);cursor:pointer}
 .k-check input{width:18px;height:18px;accent-color:var(--gold);cursor:pointer}
 
+/* Блок кнопок для персонала — скрыт от гостей, открывается долгим нажатием на логотип */
+.k-staff{display:none;gap:12px;align-items:center}
+.k-staff.show{display:flex}
+.k-logo{cursor:pointer}
+/* Оформление: кнопка "заполнить самостоятельно" и список подтверждения */
+.k-fill-btn{width:100%;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;font-size:14px;padding:14px;border-radius:12px;margin-top:10px;cursor:pointer}
+.k-confirm-list{max-height:42vh;overflow-y:auto;margin-bottom:14px}
+.k-confirm-row{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:9px 0;border-bottom:1px solid var(--border)}
+
 /* ── Портретный планшет-киоск (≈610×840): 2 крупные колонки, компактная шапка ── */
 .k-hide-narrow{display:inline}
 @media(max-width:680px){
@@ -217,10 +226,12 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   <div class="k-logo">СУШИ <span>ШТОРМ</span><span class="k-hide-narrow"> · Меню</span></div>
   <div class="k-head-right">
     <button class="k-theme" id="kThemeBtn" onclick="kToggleTheme()" title="Сменить тему">🌙</button>
-    <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
-    <button class="k-theme" onclick="location.href='/admin.html'" title="Админ-панель">⚙️</button>
     <button class="k-chat-btn" onclick="toggleChat()">💬<span class="k-hide-narrow"> Помощник по меню</span></button>
-    <button class="k-exit" onclick="kioskLogout()">Выход</button>
+    <span class="k-staff" id="kStaff">
+      <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
+      <button class="k-theme" onclick="location.href='/admin.html'" title="Админ-панель">⚙️</button>
+      <button class="k-exit" onclick="kioskLogout()">Выход</button>
+    </span>
   </div>
 </div>
 
@@ -430,14 +441,34 @@ function clearCart(){
 }
 
 // ─── CHECKOUT ───
-let _mode='delivery', _pay='card', _cutlery=1, _noCutlery=false;
+let _mode='delivery', _pay='card', _cutlery=1, _noCutlery=false, _detailed=false;
 function openCheckout(){
-  _mode='delivery'; _pay='card'; _cutlery=1; _noCutlery=false;
+  _mode='delivery'; _pay='card'; _cutlery=1; _noCutlery=false; _detailed=false;
   document.getElementById('kModal').classList.add('open');
   renderCheckout();
 }
+function showCheckoutForm(){ _detailed=true; renderCheckout(); }
 function renderCheckout(){
   const sub=cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const cnt=cart.reduce((s,x)=>s+x.qty,0);
+
+  // ── Шаг 1: простое подтверждение (голый заказ, без данных) ──
+  if(!_detailed){
+    document.getElementById('kModalContent').innerHTML=`
+      <h2>Оформление заказа <button onclick="closeCheckout()">✕</button></h2>
+      <div class="k-confirm-list">
+        ${cart.map(c=>`<div class="k-confirm-row"><span>${esc(c.name)} <span style="color:var(--muted)">× ${c.qty}</span></span><span style="white-space:nowrap">${c.price*c.qty} ₽</span></div>`).join('')}
+      </div>
+      <div class="k-tot-row"><span>Позиций</span><span>${cnt}</span></div>
+      <div class="k-tot-row big" style="margin-bottom:16px"><span>Итого</span><span>${sub} ₽</span></div>
+      <button class="k-checkout" onclick="submitKiosk()">Подтвердить заказ</button>
+      <button class="k-fill-btn" onclick="showCheckoutForm()">✏️ Заполнить данные самостоятельно</button>
+      <div style="color:var(--muted);font-size:12px;text-align:center;margin-top:12px;line-height:1.5">Можно подтвердить без данных — сотрудник уточнит детали лично.</div>
+    `;
+    return;
+  }
+
+  // ── Шаг 2: полная форма (телефон, имя, адрес и т.д.) ──
   document.getElementById('kModalContent').innerHTML=`
     <h2>Оформление заказа <button onclick="closeCheckout()">✕</button></h2>
 
@@ -499,44 +530,45 @@ function validKioskPhone(p){
 }
 
 async function submitKiosk(){
-  const phone=(document.getElementById('ko-phone')?.value||'').trim();
-  const name=(document.getElementById('ko-name')?.value||'').trim();
-  const comment=(document.getElementById('ko-comment')?.value||'').trim();
-  const preorder=(document.getElementById('ko-preorder')?.value||'').trim();
-  let addr='';
-  if(_mode==='delivery') addr=(document.getElementById('ko-addr')?.value||'').trim();
-
-  // Валидация
-  if(!validKioskPhone(phone)){ alert('Укажите корректный телефон'); return; }
-  if(_mode==='delivery' && !addr){ alert('Укажите адрес доставки'); return; }
-
-  const sub=cart.reduce((s,x)=>s+x.price*x.qty,0);
-
-  // Приборы
-  let cutleryText;
-  if(_noCutlery) cutleryText='без приборов';
-  else cutleryText=_cutlery+' '+persons(_cutlery);
+  var phone='', name='', comment='', preorder='', addr='';
+  if(_detailed){
+    phone=(document.getElementById('ko-phone')?.value||'').trim();
+    name=(document.getElementById('ko-name')?.value||'').trim();
+    comment=(document.getElementById('ko-comment')?.value||'').trim();
+    preorder=(document.getElementById('ko-preorder')?.value||'').trim();
+    if(_mode==='delivery') addr=(document.getElementById('ko-addr')?.value||'').trim();
+    // Валидация — только когда гость сам заполняет данные
+    if(!validKioskPhone(phone)){ alert('Укажите корректный телефон'); return; }
+    if(_mode==='delivery' && !addr){ alert('Укажите адрес доставки'); return; }
+  }
 
   // Примечание для ФронтПада
-  let d=[];
-  d.push(_mode==='pickup'?'🥡 САМОВЫВОЗ':'🚴 ДОСТАВКА');
-  d.push('Приборы: '+cutleryText);
-  d.push('Оплата: '+(_pay==='card'?'карта':'наличные'));
-  if(preorder) d.push('⏰ Предзаказ к '+preorder);
-  if(comment) d.push('Коммент: '+comment);
-  d.push('— заказ с планшета в зале');
+  var d=[];
+  if(_detailed){
+    var cutleryText = _noCutlery ? 'без приборов' : (_cutlery+' '+persons(_cutlery));
+    d.push(_mode==='pickup'?'🥡 САМОВЫВОЗ':'🚴 ДОСТАВКА');
+    d.push('Приборы: '+cutleryText);
+    d.push('Оплата: '+(_pay==='card'?'карта':'наличные'));
+    if(preorder) d.push('⏰ Предзаказ к '+preorder);
+    if(comment) d.push('Коммент: '+comment);
+  } else {
+    d.push('⚠️ ГОЛЫЙ ЗАКАЗ С ПЛАНШЕТА — уточнить данные у гостя');
+  }
+  d.push('— планшет в зале');
 
-  let ordNum=null;
+  var ordNum=null;
   try{
-    const r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},
+    var r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        name: name||'Гость (планшет)',
+        source: 'kiosk',
+        bare: !_detailed,
+        name: name,
         phone: phone,
-        street: addr||(_mode==='pickup'?'Самовывоз':'уточнить'),
+        street: addr,
         descr: d.join('. '),
-        items: cart.map(c=>({article:c.article,qty:c.qty}))
+        items: cart.map(function(c){ return {article:c.article,qty:c.qty}; })
       })});
-    const j=await r.json();
+    var j=await r.json();
     if(j.ok){ ordNum=j.order_number; }
   }catch(e){}
   if(!ordNum) ordNum='SS-'+Math.floor(Math.random()*9000+1000);
@@ -546,7 +578,7 @@ async function submitKiosk(){
       <div style="font-size:60px">🎉</div>
       <div style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin:12px 0">Заказ принят!</div>
       <div style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--gold)">№ ${esc(String(ordNum))}</div>
-      <div style="color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7">${name?'Спасибо, '+esc(name)+'!<br>':''}${_mode==='pickup'?'Мы позвоним, когда заказ будет готов':'Оператор перезвонит для подтверждения'} 🍣</div>
+      <div style="color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7">${_detailed ? ((name?'Спасибо, '+esc(name)+'!<br>':'')+(_mode==='pickup'?'Мы позвоним, когда заказ будет готов':'Оператор перезвонит для подтверждения')) : 'Назовите этот номер сотруднику на кассе'} 🍣</div>
       <button class="k-checkout" style="margin-top:24px" onclick="kioskReset()">Новый заказ</button>
     </div>`;
   cart=[];renderCart();renderGrid();
@@ -700,6 +732,28 @@ if(window.caches && caches.keys){
     for(var i=0;i<keys.length;i++){ caches.delete(keys[i]); }
   }).catch(function(){});
 }
+
+// ─── Доступ для персонала: долгое нажатие (~1.8 c) на логотип открывает 🔄/⚙️/Выход на 30 сек ───
+(function(){
+  var logo = document.querySelector('.k-logo');
+  if(!logo) return;
+  var pressTimer = null, hideTimer = null;
+  function reveal(){
+    var s = document.getElementById('kStaff');
+    if(!s) return;
+    s.classList.add('show');
+    if(hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){ s.classList.remove('show'); }, 30000);
+  }
+  function start(){ cancel(); pressTimer = setTimeout(reveal, 1800); }
+  function cancel(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer = null; } }
+  logo.addEventListener('touchstart', start);
+  logo.addEventListener('touchend', cancel);
+  logo.addEventListener('touchmove', cancel);
+  logo.addEventListener('mousedown', start);
+  logo.addEventListener('mouseup', cancel);
+  logo.addEventListener('mouseleave', cancel);
+})();
 
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',kInit); } else { kInit(); }
 </script>

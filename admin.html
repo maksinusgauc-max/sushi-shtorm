@@ -259,6 +259,23 @@ function renderList(){
 
 // ─── DRAG & DROP (мышь + тач) ───
 let dragId = null;
+// Авто-прокрутка страницы, когда палец с перетаскиваемой строкой у края экрана
+let _autoDir = 0, _autoTimer = null, _lastTX = 0, _lastTY = 0;
+function _updateDragOver(){
+  var el = document.elementFromPoint(_lastTX, _lastTY);
+  var row = el && el.closest ? el.closest('.a-row') : null;
+  document.querySelectorAll('.a-row').forEach(function(r){ r.classList.remove('drag-over'); });
+  if(row && +row.dataset.id !== dragId) row.classList.add('drag-over');
+}
+function _startAuto(){
+  if(_autoTimer) return;
+  _autoTimer = setInterval(function(){
+    if(!_autoDir || dragId==null){ _stopAuto(); return; }
+    window.scrollBy(0, _autoDir * 16);
+    _updateDragOver();
+  }, 16);
+}
+function _stopAuto(){ if(_autoTimer){ clearInterval(_autoTimer); _autoTimer = null; } _autoDir = 0; }
 function attachDrag(){
   const rows = document.querySelectorAll('.a-row');
   rows.forEach(row=>{
@@ -305,8 +322,16 @@ function attachTouchDrag(){
     const row = el && el.closest ? el.closest('.a-row') : null;
     document.querySelectorAll('.a-row').forEach(r=>r.classList.remove('drag-over'));
     if(row && +row.dataset.id !== dragId) row.classList.add('drag-over');
+    // у края экрana — прокручиваем дальше, чтобы дотащить в самый верх/низ
+    _lastTX = t.clientX; _lastTY = t.clientY;
+    var EDGE = 90;
+    if(t.clientY < EDGE) _autoDir = -1;
+    else if(t.clientY > window.innerHeight - EDGE) _autoDir = 1;
+    else _autoDir = 0;
+    if(_autoDir) _startAuto(); else _stopAuto();
   }, {passive:false});
   list.addEventListener('touchend', function(e){
+    _stopAuto();
     if(dragId==null) return;
     const over = document.querySelector('.a-row.drag-over');
     if(over) reorder(dragId, +over.dataset.id);
