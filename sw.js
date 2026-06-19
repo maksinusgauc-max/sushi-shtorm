@@ -1,75 +1,47 @@
 // ═══════════════════════════════════════════════════════════
-//  Service Worker для киоска «Суши Шторм» — v2
-//  Кэширует картинки, но НЕ кэширует битые/заглушки.
-//  Страница и menu.js всегда грузятся свежими (если есть сеть).
+//  Service Worker «Суши Шторм» — САМОЛИКВИДАТОР (kill-switch).
+//  Раньше SW кэшировал картинки и на старом движке планшета
+//  заклинивал перезагрузку, а cache-first держал старые битые
+//  картинки. Кэширование УБРАНО навсегда.
+//  Этот файл оставлен НАМЕРЕННО: планшет, где ещё висит старый
+//  SW, при следующей навигации подтянет этот скрипт по сети,
+//  тот снесёт все кэши, отрегистрирует сам себя и перезагрузит
+//  вкладку начисто. Никто этот SW больше не регистрирует —
+//  новые устройства его просто не получают.
+//  Не кэширует ничего: fetch-обработчика нет → все запросы
+//  идут прямо в сеть.
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'sushi-kiosk-v3';   // ← версия. Меняй цифру, чтобы сбросить кэш у всех
-
 self.addEventListener('install', function(e) {
-  self.skipWaiting();   // новая версия активируется сразу
+  self.skipWaiting(); // активируемся немедленно, не ждём закрытия вкладок
 });
 
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
-      return Promise.all(
-        keys.filter(function(k) { return k !== CACHE; })
-            .map(function(k) { return caches.delete(k); })
-      );
-    }).then(function() { return self.clients.claim(); })
+      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }).then(function() {
+      return self.registration.unregister();
+    }).then(function() {
+      return self.clients.matchAll({ type: 'window' });
+    }).then(function(clients) {
+      // принудительно перезагружаем все открытые вкладки, чтобы сбросить контроль SW
+      for (var i = 0; i < clients.length; i++) {
+        clients[i].navigate(clients[i].url);
+      }
+    }).catch(function() {})
   );
 });
 
-self.addEventListener('fetch', function(e) {
-  const url = e.request.url;
-  if (e.request.method !== 'GET') return;
-  if (url.indexOf('/api/') !== -1) return;  // API — всегда сеть
+// fetch-обработчика НЕТ — ничего не перехватываем, всё идёт в сеть напрямую.
 
-  const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
-
-  if (isImage) {
-    // Картинки: сначала кэш, если нет — сеть. Кэшируем ТОЛЬКО успешные (status 200).
-    e.respondWith(
-      caches.open(CACHE).then(function(cache) {
-        return cache.match(e.request).then(function(cached) {
-          if (cached) return cached;
-          return fetch(e.request).then(function(resp) {
-            // кэшируем только реально загруженную картинку, не ошибку
-            if (resp && resp.status === 200 && resp.type !== 'opaque') {
-              cache.put(e.request, resp.clone());
-            }
-            return resp;
-          }).catch(function() {
-            // нет сети и нет в кэше — пусть сработает onerror в html (покажет заглушку, но НЕ закэширует её)
-            return new Response('', { status: 404 });
-          });
-        });
-      })
-    );
-  } else {
-    // Страница, menu.js, sw — СНАЧАЛА СЕТЬ (всегда свежее), кэш только как резерв при обрыве
-    e.respondWith(
-      fetch(e.request).then(function(resp) {
-        if (resp && resp.status === 200) {
-          const copy = resp.clone();
-          caches.open(CACHE).then(function(cache) { cache.put(e.request, copy); });
-        }
-        return resp;
-      }).catch(function() {
-        return caches.match(e.request).then(function(c) {
-          return c || new Response('Нет соединения', { status: 503 });
-        });
-      })
-    );
-  }
-});
-
-// Принудительный сброс кэша по команде со страницы
+// На случай старой команды со страницы — тоже чистимся.
 self.addEventListener('message', function(e) {
   if (e.data === 'clearCache') {
-    caches.delete(CACHE).then(function() {
-      self.registration.unregister();
-    });
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+    }).then(function() {
+      return self.registration.unregister();
+    }).catch(function() {});
   }
 });
