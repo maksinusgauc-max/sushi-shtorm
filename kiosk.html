@@ -655,12 +655,19 @@ function retryFailedImages(){
   });
 }
 
-// Service Worker — кэширует страницу и картинки на устройстве.
-// После первой загрузки киоск работает быстро и не падает при перезагрузке.
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('/sw.js').catch(function(){});
-  });
+// Service Worker УБРАН. На старом движке планшета SW заклинивал перезагрузку
+// и капризничал с кэшем картинок. Картинки теперь лёгкие JPEG — браузер
+// кэширует их сам. При загрузке активно сносим любой ранее установленный SW
+// и его кэш, чтобы зависания больше не повторялись ни на одном устройстве.
+if('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    for(var i=0;i<regs.length;i++){ regs[i].unregister(); }
+  }).catch(function(){});
+}
+if(window.caches && caches.keys){
+  caches.keys().then(function(keys){
+    for(var i=0;i<keys.length;i++){ caches.delete(keys[i]); }
+  }).catch(function(){});
 }
 
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',kInit); } else { kInit(); }
