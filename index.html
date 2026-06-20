@@ -133,6 +133,25 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .hero-right::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 35%);z-index:1;pointer-events:none}
 .hero-img{width:100%;height:100%;object-fit:cover}
 .hero-kanji{position:absolute;bottom:20px;right:20px;font-size:160px;opacity:.04;color:#fff;z-index:0;line-height:1;pointer-events:none;user-select:none}
+/* Карусель акций в hero */
+.promo-slider{position:absolute;inset:0;z-index:2}
+.hslide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:56px 56px 64px 64px;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none}
+.hslide.is-active{opacity:1;visibility:visible;pointer-events:auto}
+.hslide--gold{background:linear-gradient(135deg,#140e00,#1f1600)}
+.hslide--red{background:linear-gradient(135deg,#160403,#240707)}
+.hslide-deco{position:absolute;right:-12px;bottom:-26px;font-size:200px;line-height:1;opacity:.05;color:#fff;user-select:none;pointer-events:none}
+.hslide-tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px}
+.hslide--gold .hslide-tag{color:var(--gold)}
+.hslide--red .hslide-tag{color:#e8675a}
+.hslide-title{font-family:'Unbounded',sans-serif;font-size:clamp(22px,2.4vw,34px);font-weight:800;line-height:1.12;letter-spacing:-.02em;margin-bottom:14px;max-width:9em}
+.hslide-text{font-size:15px;line-height:1.7;color:rgba(242,237,228,.6);font-weight:300;max-width:24em;margin-bottom:26px}
+.hslide-pill{align-self:flex-start;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px}
+.hslide--gold .hslide-pill{border:1px solid rgba(240,180,41,.3);color:var(--gold);background:rgba(240,180,41,.08)}
+.hslide--red .hslide-pill{border:1px solid rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)}
+.hslide-dots{position:absolute;left:64px;bottom:30px;display:flex;gap:8px;z-index:3}
+.hslide-dot{width:8px;height:8px;padding:0;border:none;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.22);transition:width .3s,background .3s,border-radius .3s}
+.hslide-dot.is-active{width:22px;border-radius:4px;background:var(--gold)}
+@media (prefers-reduced-motion:reduce){.hslide{transition:none}}
 
 /* SECTIONS */
 .section{padding:64px 20px}
@@ -313,7 +332,12 @@ img{display:block;max-width:100%;background:#1a1a1a}
   .burger{display:block}
   .hero{grid-template-columns:1fr;min-height:auto}
   .hero-left{padding:36px 20px 32px}
-  .hero-right{height:260px}
+  .hero-right{height:280px}
+  .hslide{padding:26px 22px 42px}
+  .hslide-dots{left:22px;bottom:16px}
+  .hslide-title{font-size:21px}
+  .hslide-text{font-size:13.5px;margin-bottom:0}
+  .hslide-deco{font-size:140px;bottom:-18px}
   .hero-stats{gap:18px}
   .menu-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
   .dish-img-wrap,.dish-img{height:150px}
@@ -378,8 +402,38 @@ img{display:block;max-width:100%;background:#1a1a1a}
     </div>
   </div>
   <div class="hero-right">
-    <img class="hero-img" src="https://kabardinka.sushi-storm.ru/image/cache/catalog/kabardinkaphoto26g/photo_2026-05-26_16-44-51-228x228.jpg" alt="Суши Шторм" style="height:100%;width:100%;object-fit:cover;filter:brightness(0.85)">
     <div class="hero-kanji">嵐</div>
+    <div class="promo-slider" id="heroSlider" role="region" aria-roledescription="карусель" aria-label="Акции">
+      <article class="hslide hslide--gold is-active">
+        <span class="hslide-deco">誕</span>
+        <span class="hslide-tag">⭐ Акция</span>
+        <h3 class="hslide-title">Сет в подарок имениннику</h3>
+        <p class="hslide-text">В ваш день рождения сет «Запечённый микс» — в подарок к заказу.</p>
+        <span class="hslide-pill">🎂 Подарок именинникам</span>
+      </article>
+      <article class="hslide hslide--red">
+        <span class="hslide-deco">贈</span>
+        <span class="hslide-tag">🎁 Подарок</span>
+        <h3 class="hslide-title">Сюрприз за первый заказ</h3>
+        <p class="hslide-text">Внутри вашего первого заказа — приятный сюрприз от нас.</p>
+        <span class="hslide-pill">Для новых клиентов</span>
+      </article>
+      <article class="hslide hslide--gold">
+        <span class="hslide-deco">大</span>
+        <span class="hslide-tag">📏 Честный размер</span>
+        <h3 class="hslide-title">Роллы +20%, пицца +30%</h3>
+        <p class="hslide-text">Большие порции без наценок и хитростей — каждый день.</p>
+        <span class="hslide-pill">Всегда в меню</span>
+      </article>
+      <article class="hslide hslide--gold">
+        <span class="hslide-deco">届</span>
+        <span class="hslide-tag">🚗 Доставка</span>
+        <h3 class="hslide-title">Бесплатно от 1000 ₽</h3>
+        <p class="hslide-text">Закажите на 1000 ₽ — привезём бесплатно и горячим за ~60 минут.</p>
+        <span class="hslide-pill">Ежедневно 10:00–23:00</span>
+      </article>
+      <div class="hslide-dots" id="heroDots"></div>
+    </div>
   </div>
 </section>
 
@@ -1480,6 +1534,39 @@ if (savedEmail) {
   if (u && u.passHash) { currentUser = u; updateUserNav(); }
   else if (u && u.pass) { localStorage.removeItem('ss_user_' + savedEmail); localStorage.removeItem('ss_current_email'); }
 }
+// ─── Карусель акций в hero ───
+(function heroPromo(){
+  function start(){
+    var slider = document.getElementById('heroSlider');
+    if (!slider) return;
+    var slides = slider.querySelectorAll('.hslide');
+    var dotsWrap = document.getElementById('heroDots');
+    if (slides.length < 2 || !dotsWrap) return;
+    var i = 0, timer = null;
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var dots = [];
+    for (var k = 0; k < slides.length; k++) {
+      var b = document.createElement('button');
+      b.className = 'hslide-dot' + (k === 0 ? ' is-active' : '');
+      b.setAttribute('aria-label', 'Акция ' + (k + 1));
+      (function(idx){ b.addEventListener('click', function(){ go(idx); restart(); }); })(k);
+      dotsWrap.appendChild(b);
+      dots.push(b);
+    }
+    function go(n){
+      slides[i].classList.remove('is-active'); dots[i].classList.remove('is-active');
+      i = (n + slides.length) % slides.length;
+      slides[i].classList.add('is-active'); dots[i].classList.add('is-active');
+    }
+    function next(){ go(i + 1); }
+    function restart(){ if (timer) clearInterval(timer); if (!reduce) timer = setInterval(next, 5000); }
+    slider.addEventListener('mouseenter', function(){ if (timer) clearInterval(timer); });
+    slider.addEventListener('mouseleave', restart);
+    restart();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
 </script>
 </body>
 </html>
