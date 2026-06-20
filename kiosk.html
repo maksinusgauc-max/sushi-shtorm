@@ -441,9 +441,9 @@ function clearCart(){
 }
 
 // ─── CHECKOUT ───
-let _mode='delivery', _pay='card', _cutlery=1, _noCutlery=false, _detailed=false;
+let _mode='delivery', _cutlery=1, _noCutlery=false, _detailed=false;
 function openCheckout(){
-  _mode='delivery'; _pay='card'; _cutlery=1; _noCutlery=false; _detailed=false;
+  _mode='delivery'; _cutlery=1; _noCutlery=false; _detailed=false;
   document.getElementById('kModal').classList.add('open');
   renderCheckout();
 }
@@ -497,13 +497,6 @@ function renderCheckout(){
       </label>
     </div>
 
-    <div class="k-field"><label>Способ оплаты</label>
-      <div class="k-seg">
-        <button class="${_pay==='card'?'active':''}" onclick="setPay('card')">💳 Карта</button>
-        <button class="${_pay==='cash'?'active':''}" onclick="setPay('cash')">💵 Наличные</button>
-      </div>
-    </div>
-
     <div class="k-field"><label>Предзаказ ко времени <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-preorder" type="time" placeholder="--:--"></div>
 
     <div class="k-field"><label>Комментарий <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-comment" placeholder="Без острого, домофон не работает..."></div>
@@ -513,7 +506,6 @@ function renderCheckout(){
   `;
 }
 function setMode(m){ _mode=m; renderCheckout(); }
-function setPay(p){ _pay=p; renderCheckout(); }
 function setCutlery(n){ _cutlery=n; _noCutlery=false; renderCheckout(); }
 function setCutleryCustom(v){
   var n=parseInt(v,10);
@@ -548,7 +540,6 @@ async function submitKiosk(){
     var cutleryText = _noCutlery ? 'без приборов' : (_cutlery+' '+persons(_cutlery));
     d.push(_mode==='pickup'?'🥡 САМОВЫВОЗ':'🚴 ДОСТАВКА');
     d.push('Приборы: '+cutleryText);
-    d.push('Оплата: '+(_pay==='card'?'карта':'наличные'));
     if(preorder) d.push('⏰ Предзаказ к '+preorder);
     if(comment) d.push('Коммент: '+comment);
   } else {
