@@ -477,7 +477,7 @@ function renderCheckout(){
       <button class="${_mode==='pickup'?'active':''}" onclick="setMode('pickup')">🥡 Самовывоз</button>
     </div>
 
-    <div class="k-field"><label>Телефон <span style="color:var(--red)">*</span></label><input id="ko-phone" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__"></div>
+    <div class="k-field"><label>Телефон <span style="color:var(--red)">*</span></label><input id="ko-phone" type="tel" inputmode="tel" value="+7 " placeholder="+7 ___ ___-__-__"></div>
 
     <div class="k-field"><label>Имя <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-name" placeholder="Иван"></div>
 
@@ -567,10 +567,11 @@ async function submitKiosk(){
   document.getElementById('kModalContent').innerHTML=`
     <div style="text-align:center;padding:20px 0">
       <div style="font-size:60px">🎉</div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin:12px 0">Заказ принят!</div>
-      <div style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:900;color:var(--gold)">№ ${esc(String(ordNum))}</div>
-      <div style="color:var(--muted);font-size:14px;margin-top:14px;line-height:1.7">${_detailed ? ((name?'Спасибо, '+esc(name)+'!<br>':'')+(_mode==='pickup'?'Мы позвоним, когда заказ будет готов':'Оператор перезвонит для подтверждения')) : 'Назовите этот номер сотруднику на кассе'} 🍣</div>
-      <button class="k-checkout" style="margin-top:24px" onclick="kioskReset()">Новый заказ</button>
+      <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;margin:12px 0 18px">Ваш заказ принят!</div>
+      <div style="color:var(--muted);font-size:14px;margin-bottom:4px">Ваш номер заказа</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1.1">№ ${esc(String(ordNum))}</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-top:22px;color:var(--text);font-size:16px;line-height:1.6">📸 Сфотографируйте номер заказа<br>и передайте его администратору</div>
+      <button class="k-checkout" style="margin-top:24px" onclick="kioskReset()">ОК</button>
     </div>`;
   cart=[];renderCart();renderGrid();
   var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
@@ -583,7 +584,12 @@ function persons(n){
   if(n1===1) return 'персона';
   return 'персон';
 }
-function kioskReset(){closeCheckout();}
+function kioskReset(){
+  closeCheckout();
+  var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
+  var bd=document.getElementById('kCartBackdrop'); if(bd)bd.classList.remove('open');
+  if(typeof renderGrid==='function')renderGrid();
+}
 
 // ─── AI CHAT (Claude API через /api/chat) ───
 function toggleChat(){
