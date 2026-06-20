@@ -39,7 +39,16 @@ body.light .modal{background:#fff}
 body.light .form-input,body.light .form-select,body.light .form-textarea{background:#f5f0e8;color:var(--text)}
 body.light img{background:#e8e0d0}
 body.light .chat-bubble.bot{background:#fff;border:1px solid var(--border)}
+body.light .hero-sub{color:rgba(26,22,16,.6)}
 body.light .chat-input-row input{background:#f5f0e8;color:var(--text)}
+/* Светлая тема: карусель акций + промо-карточки (две колонки) */
+body.light .hslide--gold{background:linear-gradient(135deg,#fff6e2,#fcecca)}
+body.light .hslide--red{background:linear-gradient(135deg,#fdeae6,#f7d6d0)}
+body.light .hslide-text{color:rgba(26,22,16,.62)}
+body.light .hslide-deco{color:#1a1610;opacity:.06}
+body.light .hslide-dot{background:rgba(0,0,0,.18)}
+body.light .promo-card.dark{background:linear-gradient(135deg,#fff6e2,#fcecca)}
+body.light .promo-card.red{background:linear-gradient(135deg,#fdeae6,#f7d6d0)}
 
 /* THEME TOGGLE */
 .theme-btn{background:var(--card);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
@@ -408,14 +417,14 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <span class="hslide-deco">誕</span>
         <span class="hslide-tag">⭐ Акция</span>
         <h3 class="hslide-title">Сет в подарок имениннику</h3>
-        <p class="hslide-text">В ваш день рождения сет «Запечённый микс» — в подарок к заказу.</p>
+        <p class="hslide-text">В ваш день рождения сет «Запечённый микс» в подарок при заказе от 1500 ₽.</p>
         <span class="hslide-pill">🎂 Подарок именинникам</span>
       </article>
       <article class="hslide hslide--red">
         <span class="hslide-deco">贈</span>
-        <span class="hslide-tag">🎁 Подарок</span>
-        <h3 class="hslide-title">Сюрприз за первый заказ</h3>
-        <p class="hslide-text">Внутри вашего первого заказа — приятный сюрприз от нас.</p>
+        <span class="hslide-tag">🎁 Промокод</span>
+        <h3 class="hslide-title">СТАРТ — ролл в подарок</h3>
+        <p class="hslide-text">«Калифорния кунжут» или «Бонито» в подарок к первому заказу от 1000 ₽.</p>
         <span class="hslide-pill">Для новых клиентов</span>
       </article>
       <article class="hslide hslide--gold">
@@ -428,8 +437,8 @@ img{display:block;max-width:100%;background:#1a1a1a}
       <article class="hslide hslide--gold">
         <span class="hslide-deco">届</span>
         <span class="hslide-tag">🚗 Доставка</span>
-        <h3 class="hslide-title">Бесплатно от 1000 ₽</h3>
-        <p class="hslide-text">Закажите на 1000 ₽ — привезём бесплатно и горячим за ~60 минут.</p>
+        <h3 class="hslide-title">Бесплатно от 1200 ₽</h3>
+        <p class="hslide-text">Закажите на 1200 ₽ — привезём бесплатно и горячим за ~60 минут.</p>
         <span class="hslide-pill">Ежедневно 10:00–23:00</span>
       </article>
       <div class="hslide-dots" id="heroDots"></div>
@@ -484,14 +493,14 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <div class="promo-deco">誕</div>
         <div class="promo-tag">⭐ Акция</div>
         <div class="promo-title">Сет «Запечённый микс» в подарок на день рождения</div>
-        <div class="promo-text">Мы помним ваш праздник! Имениннику — сет «Запечённый микс» в подарок к заказу. Отмечайте вкусно с Суши Шторм!</div>
+        <div class="promo-text">Мы помним ваш праздник! Имениннику — сет «Запечённый микс» в подарок при заказе от 1500 ₽. Отмечайте вкусно с Суши Шторм!</div>
         <div class="promo-pill">🎂 Подарок именинникам</div>
       </div>
       <div class="promo-card red">
         <div class="promo-deco">贈</div>
         <div class="promo-tag" style="color:#e8675a">🎁 Подарок</div>
-        <div class="promo-title">Подарок за первый заказ</div>
-        <div class="promo-text">Внутри вашего первого заказа — сюрприз от нас!</div>
+        <div class="promo-title">Промокод СТАРТ для первого заказа</div>
+        <div class="promo-text">Введите промокод СТАРТ и получите ролл «Калифорния кунжут» или «Бонито» в подарок к первому заказу от 1000 ₽.</div>
         <div class="promo-pill" style="border-color:rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)">Для новых клиентов</div>
       </div>
     </div>
@@ -622,15 +631,15 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <div class="deliv-block">
           <div class="deliv-block-title">📦 Условия доставки</div>
           <div class="deliv-row"><span class="lbl">Минимальный заказ</span><span class="val">500 ₽</span></div>
-          <div class="deliv-row"><span class="lbl">Доставка от 1000 ₽</span><span class="val free">Бесплатно</span></div>
-          <div class="deliv-row"><span class="lbl">Доставка до 1000 ₽</span><span class="val">100 ₽</span></div>
+          <div class="deliv-row"><span class="lbl">Доставка от 1200 ₽</span><span class="val free">Бесплатно</span></div>
+          <div class="deliv-row"><span class="lbl">Доставка до 1200 ₽</span><span class="val">100 ₽</span></div>
           <div class="deliv-row"><span class="lbl">Время доставки</span><span class="val">~60 мин</span></div>
           <div class="deliv-row"><span class="lbl">Работаем</span><span class="val">10:00 – 23:00</span></div>
         </div>
         <div class="deliv-block">
           <div class="deliv-block-title">🗺 Зоны</div>
           <div class="zone-legend">
-            <div class="zone-item"><div class="zone-dot" style="background:#4CAF50"></div>Кабардинка — бесплатно от 1000 ₽</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#4CAF50"></div>Кабардинка — бесплатно от 1200 ₽</div>
             <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>Пригород — 100 ₽</div>
           </div>
         </div>
@@ -726,6 +735,8 @@ function getDishes() { return (window.MENU && window.MENU.length) ? window.MENU 
 
 let cart = [];
 const MIN_ORDER = 500;       // минимальная сумма заказа, ₽
+const FREE_DELIVERY = 1200;  // бесплатная доставка от этой суммы, ₽
+const DELIVERY_FEE = 100;    // стоимость доставки ниже порога, ₽
 const WORK_OPEN = 10;        // открытие, час
 const WORK_CLOSE = 23;       // закрытие, час
 function isOpenNow(){ const h = new Date().getHours(); return h >= WORK_OPEN && h < WORK_CLOSE; }
@@ -838,9 +849,9 @@ function renderCartContent() {
   }
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
   const SERVICE_FEE = 49;
-  const deliv = sub >= 1000 ? 0 : 100;
+  const deliv = sub >= FREE_DELIVERY ? 0 : DELIVERY_FEE;
   const total = sub + deliv + SERVICE_FEE;
-  const left = sub < 1000 ? 1000 - sub : 0;
+  const left = sub < FREE_DELIVERY ? FREE_DELIVERY - sub : 0;
   el.innerHTML = `
     ${left > 0 ? `<div class="free-delivery-bar">До бесплатной доставки ещё <b>${left} ₽</b></div>` : '<div class="free-delivery-bar">🎉 Доставка бесплатна!</div>'}
     <div class="cart-items">
@@ -926,7 +937,7 @@ function submitOrder() {
   const addr = document.getElementById('fo-addr').value.trim();
   if (!name || !phone || !addr) { alert('Заполните имя, телефон и адрес'); return; }
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  const deliv = sub>=1000?0:100;
+  const deliv = sub >= FREE_DELIVERY ? 0 : DELIVERY_FEE;
   const ordNum = 'SS-' + Math.floor(Math.random()*9000+1000);
   if (currentUser) {
     currentUser.orders = currentUser.orders || [];
@@ -1445,7 +1456,7 @@ submitOrder = async function() {
 
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
   const SERVICE_FEE = 49;
-  const deliv = sub>=1000?0:100;
+  const deliv = sub >= FREE_DELIVERY ? 0 : DELIVERY_FEE;
   const total = sub + deliv + SERVICE_FEE;
 
   // Блокируем кнопку на время отправки
