@@ -186,7 +186,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   .k-logo{font-size:15px}
   .k-head-right{gap:7px}
   .k-theme{width:42px;height:42px;font-size:17px}
-  .k-chat-btn{padding:0;width:42px;height:42px;justify-content:center;gap:0;font-size:17px}
+  .k-chat-btn{padding:13px 18px;width:auto;height:auto;justify-content:center;gap:8px;font-size:16px;font-weight:700}
   .k-exit{padding:10px 12px;font-size:12px}
 
   /* Левый список категорий — уже, но читаемо, с переносом длинных названий */
@@ -226,7 +226,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   <div class="k-logo">СУШИ <span>ШТОРМ</span><span class="k-hide-narrow"> · Меню</span></div>
   <div class="k-head-right">
     <button class="k-theme" id="kThemeBtn" onclick="kToggleTheme()" title="Сменить тему">🌙</button>
-    <button class="k-chat-btn" onclick="toggleChat()">💬<span class="k-hide-narrow"> Помощник по меню</span></button>
+    <button class="k-chat-btn" onclick="toggleChat()">💬<span> Помощник по меню</span></button>
     <span class="k-staff" id="kStaff">
       <button class="k-theme" onclick="kHardRefresh()" title="Обновить страницу">🔄</button>
       <button class="k-theme" onclick="location.href='/admin.html'" title="Админ-панель">⚙️</button>
@@ -441,9 +441,9 @@ function clearCart(){
 }
 
 // ─── CHECKOUT ───
-let _mode='delivery', _cutlery=1, _noCutlery=false, _detailed=false, _submitting=false;
+let _mode='delivery', _cutlery=1, _noCutlery=false, _detailed=false, _submitting=false, _cutleryChosen=false;
 function openCheckout(){
-  _mode='delivery'; _cutlery=1; _noCutlery=false; _detailed=false; _submitting=false;
+  _mode='delivery'; _cutlery=1; _noCutlery=false; _detailed=false; _submitting=false; _cutleryChosen=false;
   document.getElementById('kModal').classList.add('open');
   renderCheckout();
 }
@@ -465,8 +465,8 @@ function renderCheckout(){
       <div class="k-field">
         <label>Количество приборов <span style="color:var(--muted)">(необязательно)</span></label>
         <div class="k-cutlery" style="${_noCutlery?'opacity:.4;pointer-events:none':''}">
-          ${[1,2,3,4,5,6].map(n=>`<button class="k-cut-btn ${!_noCutlery&&_cutlery===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
-          <input class="k-cut-input ${!_noCutlery&&![1,2,3,4,5,6].includes(_cutlery)?'active':''}" id="ko-cutlery-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${![1,2,3,4,5,6].includes(_cutlery)?_cutlery:''}" oninput="setCutleryCustom(this.value)">
+          ${[1,2,3,4,5,6].map(n=>`<button class="k-cut-btn ${_cutleryChosen&&!_noCutlery&&_cutlery===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
+          <input class="k-cut-input ${_cutleryChosen&&!_noCutlery&&![1,2,3,4,5,6].includes(_cutlery)?'active':''}" id="ko-cutlery-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${![1,2,3,4,5,6].includes(_cutlery)?_cutlery:''}" oninput="setCutleryCustom(this.value)">
         </div>
         <label class="k-check" style="margin-top:10px">
           <input type="checkbox" id="ko-nocutlery" ${_noCutlery?'checked':''} onchange="toggleNoCutlery()">
@@ -501,8 +501,8 @@ function renderCheckout(){
     <div class="k-field">
       <label>Количество приборов <span style="color:var(--red)">*</span></label>
       <div class="k-cutlery" style="${_noCutlery?'opacity:.4;pointer-events:none':''}">
-        ${[1,2,3,4,5,6].map(n=>`<button class="k-cut-btn ${!_noCutlery&&_cutlery===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
-        <input class="k-cut-input ${!_noCutlery&&![1,2,3,4,5,6].includes(_cutlery)?'active':''}" id="ko-cutlery-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${![1,2,3,4,5,6].includes(_cutlery)?_cutlery:''}" oninput="setCutleryCustom(this.value)">
+        ${[1,2,3,4,5,6].map(n=>`<button class="k-cut-btn ${_cutleryChosen&&!_noCutlery&&_cutlery===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
+        <input class="k-cut-input ${_cutleryChosen&&!_noCutlery&&![1,2,3,4,5,6].includes(_cutlery)?'active':''}" id="ko-cutlery-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${![1,2,3,4,5,6].includes(_cutlery)?_cutlery:''}" oninput="setCutleryCustom(this.value)">
       </div>
       <label class="k-check" style="margin-top:10px">
         <input type="checkbox" id="ko-nocutlery" ${_noCutlery?'checked':''} onchange="toggleNoCutlery()">
@@ -519,14 +519,20 @@ function renderCheckout(){
   `;
 }
 function setMode(m){ _mode=m; renderCheckout(); }
-function setCutlery(n){ _cutlery=n; _noCutlery=false; renderCheckout(); }
+function setCutlery(n){ _cutlery=n; _noCutlery=false; _cutleryChosen=true; renderCheckout(); }
 function setCutleryCustom(v){
   var n=parseInt(v,10);
-  if(n>0){ _cutlery=n; _noCutlery=false; }
+  if(n>0){ _cutlery=n; _noCutlery=false; _cutleryChosen=true; }
   // не перерисовываем целиком, чтобы не сбить фокус с поля
   document.querySelectorAll('.k-cut-btn').forEach(function(b){ b.classList.remove('active'); });
 }
-function toggleNoCutlery(){ _noCutlery=document.getElementById('ko-nocutlery').checked; renderCheckout(); }
+function toggleNoCutlery(){ _noCutlery=document.getElementById('ko-nocutlery').checked; _cutleryChosen=true; renderCheckout(); }
+// Текст про приборы для примечания: учитываем, выбрал ли гость вообще
+function cutleryNote(){
+  if(_noCutlery) return 'без приборов';
+  if(_cutleryChosen) return _cutlery+' '+persons(_cutlery);
+  return 'клиент не выбрал количество приборов';
+}
 function closeCheckout(){ document.getElementById('kModal').classList.remove('open'); }
 
 function validKioskPhone(p){
@@ -555,14 +561,12 @@ async function submitKiosk(){
   // Примечание для ФронтПада
   var d=[];
   if(_detailed){
-    var cutleryText = _noCutlery ? 'без приборов' : (_cutlery+' '+persons(_cutlery));
     d.push(_mode==='pickup'?'🥡 САМОВЫВОЗ':'🚴 ДОСТАВКА');
-    d.push('Приборы: '+cutleryText);
+    d.push('Приборы: '+cutleryNote());
     if(preorder) d.push('⏰ Предзаказ к '+preorder);
     if(comment) d.push('Коммент: '+comment);
   } else {
-    var cutleryTextB = _noCutlery ? 'без приборов' : (_cutlery+' '+persons(_cutlery));
-    d.push('Приборы: '+cutleryTextB);
+    d.push('Приборы: '+cutleryNote());
   }
   d.push('— планшет в зале');
 
@@ -617,13 +621,13 @@ function kioskReset(){
 var _idleTimer=null;
 var KIOSK_IDLE_MS=150000; // 2.5 минуты
 function kioskSoftReset(){
-  cart=[]; _detailed=false; _submitting=false;
+  cart=[]; _detailed=false; _submitting=false; _cutleryChosen=false;
   if(typeof renderCart==='function')renderCart();
   closeCheckout();
   var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
   var bd=document.getElementById('kCartBackdrop'); if(bd)bd.classList.remove('open');
   var ch=document.getElementById('kChat'); if(ch)ch.classList.remove('open');
-  var st=document.getElementById('kStaff'); if(st)st.style.display='none';
+  var st=document.getElementById('kStaff'); if(st)st.classList.remove('show');
   if(typeof renderGrid==='function')renderGrid();
 }
 function kioskIdleTick(){
