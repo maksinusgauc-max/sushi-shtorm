@@ -723,9 +723,19 @@ let cart = [];
 const MIN_ORDER = 1200;      // минимальная сумма заказа, ₽
 const FREE_DELIVERY = 1200;  // бесплатная доставка от этой суммы, ₽
 const DELIVERY_FEE = 100;    // стоимость доставки ниже порога, ₽
-const WORK_OPEN = 10;        // открытие, час
-const WORK_CLOSE = 23;       // закрытие, час
-function isOpenNow(){ const h = new Date().getHours(); return h >= WORK_OPEN && h < WORK_CLOSE; }
+const WORK_OPEN = 10;        // открытие, час (МСК)
+const WORK_CLOSE = 23;       // закрытие, час (МСК)
+// Час в Москве независимо от часового пояса посетителя
+function moscowHour(){
+  try {
+    var s = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Moscow', hour: '2-digit', hour12: false }).format(new Date());
+    var h = parseInt(s, 10);
+    return h === 24 ? 0 : h;
+  } catch(e) {
+    return new Date().getHours(); // запасной вариант, если Intl недоступен
+  }
+}
+function isOpenNow(){ const h = moscowHour(); return h >= WORK_OPEN && h < WORK_CLOSE; }
 let currentUser = null;
 let currentCat = 'all';      // активная категория меню
 
@@ -875,7 +885,7 @@ function renderCartContent() {
       <div class="cart-total-row big"><span>Итого</span><span>${total} ₽</span></div>
     </div>
     ${!isOpenNow()
-      ? `<div style="background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e8675a;text-align:center;margin-bottom:10px">🌙 Сейчас мы закрыты. Приём заказов с ${WORK_OPEN}:00 до ${WORK_CLOSE}:00. Можно собрать корзину — оформите утром!</div>
+      ? `<div style="background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e8675a;text-align:center;margin-bottom:10px">🌙 Сейчас мы закрыты. Приём заказов с ${WORK_OPEN}:00 до ${WORK_CLOSE}:00 МСК. Можно собрать корзину — оформите утром!</div>
          <button class="submit-btn" style="opacity:.5;cursor:not-allowed" disabled>Оформить заказ →</button>`
       : sub < MIN_ORDER
       ? `<div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gold);text-align:center;margin-bottom:10px">Минимум для доставки — ${MIN_ORDER} ₽ (добавьте ещё на ${MIN_ORDER - sub} ₽). Самовывоз — от любой суммы.</div>
@@ -1513,7 +1523,7 @@ submitOrder = async function() {
   if (mode === 'delivery' && !addr) { alert('Укажите адрес доставки'); return; }
   const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
   if (mode === 'delivery' && sub < MIN_ORDER) { alert('Минимальная сумма для доставки — ' + MIN_ORDER + ' ₽. Для меньшей суммы выберите самовывоз.'); return; }
-  if (!isOpenNow()) { alert('Сейчас мы закрыты. Приём заказов с ' + WORK_OPEN + ':00 до ' + WORK_CLOSE + ':00'); return; }
+  if (!isOpenNow()) { alert('Сейчас мы закрыты. Приём заказов с ' + WORK_OPEN + ':00 до ' + WORK_CLOSE + ':00 МСК'); return; }
   if (!document.getElementById('fo-consent')?.checked) { alert('Необходимо согласие на обработку персональных данных'); return; }
 
   const SERVICE_FEE = 49;
