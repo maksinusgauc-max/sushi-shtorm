@@ -127,7 +127,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   .k-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   /* Корзина превращается в выдвижную панель справа */
   .k-cart{
-    position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;z-index:300;
+    position:fixed;top:0;right:0;bottom:0;width:360px;max-width:90vw;z-index:300;
     transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
     box-shadow:-8px 0 32px rgba(0,0,0,.4);
   }
@@ -140,6 +140,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
     box-shadow:-4px 0 16px rgba(0,0,0,.3);font-weight:700;
   }
   .k-cart-tab .ico{font-size:22px}
+  .k-cart-tab .lbl{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:2px;font-size:12px;font-weight:900;color:#000;line-height:1}
   .k-cart-tab .cnt{background:#000;color:var(--gold);font-size:12px;font-weight:900;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
   /* Затемнение фона при открытой корзине */
   .k-cart-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:298;opacity:0;pointer-events:none;transition:opacity .3s}
@@ -191,7 +192,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
 
   /* Левый список категорий — уже, но читаемо, с переносом длинных названий */
   .k-cats{width:122px;padding:10px 8px}
-  .k-cat{font-size:13px;padding:12px 10px;line-height:1.25;margin-bottom:3px}
+  .k-cat{font-size:15px;font-weight:800;padding:13px 10px;line-height:1.2;margin-bottom:3px}
 
   /* Сетка: ровно 2 колонки, крупные фото */
   .k-menu-wrap{padding:14px}
@@ -205,7 +206,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   .k-qbtn{width:22px;height:22px}
 
   /* Корзина — выезжающая панель сбоку */
-  .k-cart{width:300px;max-width:88vw}
+  .k-cart{width:360px;max-width:90vw}
 }
 </style>
 </head>
@@ -242,6 +243,7 @@ button{font-family:"Manrope",sans-serif;cursor:pointer;border:none;outline:none}
   <div class="k-cart-backdrop" id="kCartBackdrop" onclick="toggleCart()"></div>
   <button class="k-cart-tab" id="kCartTab" onclick="toggleCart()">
     <span class="ico">🛒</span>
+    <span class="lbl">КОРЗИНА</span>
     <span class="cnt" id="kCartTabCount">0</span>
   </button>
   <div class="k-cart" id="kCart">
@@ -311,8 +313,8 @@ function getDishes(){
 }
 
 const CATS = [
-  ['all','🍽 Всё'],['sets','🎁 Сеты'],['rolls','🌀 Роллы'],['baked','🔥 Запечённые'],
-  ['tempura','🍤 Темпурные'],['mini','🥢 Мини роллы'],['sushi','🍣 Суши'],['pizza','🍕 Пицца'],
+  ['all','🍽 Всё'],['sets','🎁 Сеты'],['rolls','🌀 Холодные роллы'],['baked','🔥 Запечённые'],
+  ['tempura','🍤 Жареные'],['mini','🥢 Мини роллы'],['sushi','🍣 Суши'],['pizza','🍕 Пицца'],
   ['salads','🥗 Салаты'],['hot','🍟 Горячее'],['soupmussels','🦪 Супы и мидии'],
   ['desserts','🍰 Десерты'],['drinks','🥤 Напитки'],['sauces','🧂 Соусы']
 ];
@@ -442,13 +444,24 @@ function clearCart(){
 
 // ─── CHECKOUT ───
 let _mode='delivery', _cutlery=1, _noCutlery=false, _detailed=false, _submitting=false, _cutleryChosen=false;
+let _fPhone='+7 ', _fName='', _fAddr='', _fComment='', _fPreorder='';
 function openCheckout(){
   _mode='delivery'; _cutlery=1; _noCutlery=false; _detailed=false; _submitting=false; _cutleryChosen=false;
+  _fPhone='+7 '; _fName=''; _fAddr=''; _fComment=''; _fPreorder='';
   document.getElementById('kModal').classList.add('open');
   renderCheckout();
 }
 function showCheckoutForm(){ _detailed=true; renderCheckout(); }
+// Запоминаем введённое перед перерисовкой формы, чтобы данные не слетали
+function snapshotForm(){
+  var p=document.getElementById('ko-phone'); if(p)_fPhone=p.value;
+  var n=document.getElementById('ko-name'); if(n)_fName=n.value;
+  var a=document.getElementById('ko-addr'); if(a)_fAddr=a.value;
+  var c=document.getElementById('ko-comment'); if(c)_fComment=c.value;
+  var pr=document.getElementById('ko-preorder'); if(pr)_fPreorder=pr.value;
+}
 function renderCheckout(){
+  snapshotForm();
   const sub=cart.reduce((s,x)=>s+x.price*x.qty,0);
   const cnt=cart.reduce((s,x)=>s+x.qty,0);
 
@@ -490,12 +503,12 @@ function renderCheckout(){
       <button class="${_mode==='pickup'?'active':''}" onclick="setMode('pickup')">🥡 Самовывоз</button>
     </div>
 
-    <div class="k-field"><label>Телефон <span style="color:var(--red)">*</span></label><input id="ko-phone" type="tel" inputmode="tel" value="+7 " placeholder="+7 ___ ___-__-__"></div>
+    <div class="k-field"><label>Телефон <span style="color:var(--red)">*</span></label><input id="ko-phone" type="tel" inputmode="tel" value="${esc(_fPhone)}" placeholder="+7 ___ ___-__-__"></div>
 
-    <div class="k-field"><label>Имя <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-name" placeholder="Иван"></div>
+    <div class="k-field"><label>Имя <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-name" value="${esc(_fName)}" placeholder="Иван"></div>
 
     ${_mode==='delivery'?`
-      <div class="k-field"><label>Адрес доставки <span style="color:var(--red)">*</span></label><input id="ko-addr" placeholder="ул. Садовая, д. 12, кв. 5"></div>
+      <div class="k-field"><label>Адрес доставки <span style="color:var(--red)">*</span></label><input id="ko-addr" value="${esc(_fAddr)}" placeholder="ул. Садовая, д. 12, кв. 5"></div>
     `:''}
 
     <div class="k-field">
@@ -510,9 +523,9 @@ function renderCheckout(){
       </label>
     </div>
 
-    <div class="k-field"><label>Предзаказ ко времени <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-preorder" type="time" placeholder="--:--"></div>
+    <div class="k-field"><label>Предзаказ ко времени <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-preorder" type="time" value="${esc(_fPreorder)}" placeholder="--:--"></div>
 
-    <div class="k-field"><label>Комментарий <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-comment" placeholder="Без острого, домофон не работает..."></div>
+    <div class="k-field"><label>Комментарий <span style="color:var(--muted)">(необязательно)</span></label><input id="ko-comment" value="${esc(_fComment)}" placeholder="Без острого, домофон не работает..."></div>
 
     <div class="k-tot-row big" style="margin-bottom:12px"><span>Итого</span><span>${sub} ₽</span></div>
     <button class="k-checkout" onclick="submitKiosk()">Подтвердить заказ 🎉</button>
@@ -570,7 +583,7 @@ async function submitKiosk(){
   }
   d.push('— планшет в зале');
 
-  var ordNum=null;
+  var ordNum=null, errMsg='';
   try{
     var r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -583,9 +596,23 @@ async function submitKiosk(){
         items: cart.map(function(c){ return {article:c.article,qty:c.qty}; })
       })});
     var j=await r.json();
-    if(j.ok){ ordNum=j.order_number; }
-  }catch(e){}
-  if(!ordNum) ordNum='SS-'+Math.floor(Math.random()*9000+1000);
+    if(j && j.ok && j.order_number){ ordNum=j.order_number; }
+    else { errMsg=(j && j.error) ? j.error : 'Заказ не принят кассой'; }
+  }catch(e){ errMsg='Нет связи с сервером'; }
+
+  // ── Не удалось отправить: НЕ чистим корзину, НЕ показываем фейковый номер ──
+  if(!ordNum){
+    _submitting=false;
+    document.getElementById('kModalContent').innerHTML=`
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:56px">⚠️</div>
+        <div style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;margin:12px 0 10px">Не удалось отправить заказ</div>
+        <div style="color:var(--muted);font-size:15px;line-height:1.6">${esc(errMsg)}.<br>Проверьте интернет и попробуйте ещё раз.<br>Корзина сохранена.</div>
+        <button class="k-checkout" style="margin-top:22px" onclick="renderCheckout()">Попробовать снова</button>
+        <button class="k-fill-btn" onclick="closeCheckout()">Закрыть</button>
+      </div>`;
+    return;
+  }
 
   document.getElementById('kModalContent').innerHTML=`
     <div style="text-align:center;padding:20px 0">
@@ -621,7 +648,9 @@ function kioskReset(){
 var _idleTimer=null;
 var KIOSK_IDLE_MS=150000; // 2.5 минуты
 function kioskSoftReset(){
-  cart=[]; _detailed=false; _submitting=false; _cutleryChosen=false;
+  if(_submitting) return; // идёт отправка — не трогаем
+  cart=[]; _detailed=false; _cutleryChosen=false;
+  _fPhone='+7 '; _fName=''; _fAddr=''; _fComment=''; _fPreorder='';
   if(typeof renderCart==='function')renderCart();
   closeCheckout();
   var co=document.getElementById('kCart'); if(co)co.classList.remove('open');
@@ -634,7 +663,7 @@ function kioskIdleTick(){
   if(_idleTimer)clearTimeout(_idleTimer);
   _idleTimer=setTimeout(kioskSoftReset, KIOSK_IDLE_MS);
 }
-['touchstart','mousedown','keydown','wheel'].forEach(function(ev){
+['touchstart','mousedown','keydown','wheel','input'].forEach(function(ev){
   document.addEventListener(ev, kioskIdleTick, true);
 });
 kioskIdleTick();
