@@ -144,20 +144,26 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .hero-kanji{position:absolute;bottom:20px;right:20px;font-size:160px;opacity:.04;color:#fff;z-index:0;line-height:1;pointer-events:none;user-select:none}
 /* Карусель акций в hero */
 .promo-slider{position:absolute;inset:0;z-index:2}
-.hslide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:56px 56px 64px 64px;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none}
+.hslide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .9s ease;pointer-events:none}
 .hslide.is-active{opacity:1;visibility:visible;pointer-events:auto}
 .hslide--gold{background:linear-gradient(135deg,#140e00,#1f1600)}
 .hslide--red{background:linear-gradient(135deg,#160403,#240707)}
-.hslide-deco{position:absolute;right:-12px;bottom:-26px;font-size:200px;line-height:1;opacity:.05;color:#fff;user-select:none;pointer-events:none}
-.hslide-tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:16px}
+.hslide-visual{position:relative;flex:1 1 54%;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(240,180,41,.05),transparent)}
+.hslide--red .hslide-visual{background:linear-gradient(135deg,rgba(214,59,47,.06),transparent)}
+.hslide-photo{width:100%;height:100%;object-fit:cover}
+.hslide-svg{width:74%;max-height:76%;height:auto}
+.hslide-deco{display:none;font-size:190px;line-height:1;opacity:.08;color:var(--gold);user-select:none;pointer-events:none}
+.hslide-visual.no-photo .hslide-deco{display:block}
+.hslide-body{flex:0 0 auto;padding:24px 40px 52px;position:relative;border-top:1px solid var(--border)}
+.hslide-tag{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
 .hslide--gold .hslide-tag{color:var(--gold)}
 .hslide--red .hslide-tag{color:#e8675a}
-.hslide-title{font-family:'Unbounded',sans-serif;font-size:clamp(22px,2.4vw,34px);font-weight:800;line-height:1.12;letter-spacing:-.02em;margin-bottom:14px;max-width:9em}
-.hslide-text{font-size:15px;line-height:1.7;color:rgba(242,237,228,.6);font-weight:300;max-width:24em;margin-bottom:26px}
-.hslide-pill{align-self:flex-start;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px}
+.hslide-title{font-family:'Unbounded',sans-serif;font-size:clamp(20px,2.1vw,30px);font-weight:800;line-height:1.12;letter-spacing:-.02em;margin-bottom:12px;max-width:11em}
+.hslide-text{font-size:14.5px;line-height:1.6;color:rgba(242,237,228,.6);font-weight:300;max-width:26em;margin-bottom:22px}
+.hslide-pill{display:inline-block;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px}
 .hslide--gold .hslide-pill{border:1px solid rgba(240,180,41,.3);color:var(--gold);background:rgba(240,180,41,.08)}
 .hslide--red .hslide-pill{border:1px solid rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)}
-.hslide-dots{position:absolute;left:64px;bottom:30px;display:flex;gap:8px;z-index:3}
+.hslide-dots{position:absolute;left:40px;bottom:22px;display:flex;gap:8px;z-index:3}
 .hslide-dot{width:8px;height:8px;padding:0;border:none;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.22);transition:width .3s,background .3s,border-radius .3s}
 .hslide-dot.is-active{width:22px;border-radius:4px;background:var(--gold)}
 @media (prefers-reduced-motion:reduce){.hslide{transition:none}}
@@ -341,12 +347,15 @@ img{display:block;max-width:100%;background:#1a1a1a}
   .burger{display:block}
   .hero{grid-template-columns:1fr;min-height:auto}
   .hero-left{padding:36px 20px 32px}
-  .hero-right{height:280px}
-  .hslide{padding:26px 22px 42px}
-  .hslide-dots{left:22px;bottom:16px}
-  .hslide-title{font-size:21px}
-  .hslide-text{font-size:13.5px;margin-bottom:0}
-  .hslide-deco{font-size:140px;bottom:-18px}
+  .hero-right{height:340px}
+  .hslide-body{padding:14px 22px 38px}
+  .hslide-dots{left:22px;bottom:14px}
+  .hslide-tag{margin-bottom:7px}
+  .hslide-title{font-size:18px;margin-bottom:7px}
+  .hslide-text{font-size:12.5px;line-height:1.5;margin-bottom:0}
+  .hslide-pill{display:none}
+  .hslide-svg{width:62%;max-height:84%}
+  .hslide-deco{font-size:120px}
   .hero-stats{gap:18px}
   .menu-grid{grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
   .dish-img-wrap,.dish-img{height:150px}
@@ -414,32 +423,88 @@ img{display:block;max-width:100%;background:#1a1a1a}
     <div class="hero-kanji">嵐</div>
     <div class="promo-slider" id="heroSlider" role="region" aria-roledescription="карусель" aria-label="Акции">
       <article class="hslide hslide--gold is-active">
-        <span class="hslide-deco">誕</span>
-        <span class="hslide-tag">⭐ Акция</span>
-        <h3 class="hslide-title">Сет в подарок имениннику</h3>
-        <p class="hslide-text">В ваш день рождения сет «Запечённый микс» в подарок при заказе от 1500 ₽.</p>
-        <span class="hslide-pill">🎂 Подарок именинникам</span>
+        <div class="hslide-visual">
+          <img class="hslide-photo" src="img/4440074.jpg" alt="Сет «Запечённый микс»" loading="lazy"
+               onerror="this.onerror=null;this.style.display='none';this.parentNode.classList.add('no-photo')">
+          <span class="hslide-deco">誕</span>
+        </div>
+        <div class="hslide-body">
+          <span class="hslide-tag">⭐ Акция</span>
+          <h3 class="hslide-title">Сет в подарок имениннику</h3>
+          <p class="hslide-text">В ваш день рождения сет «Запечённый микс» в подарок при заказе от 1500 ₽.</p>
+          <span class="hslide-pill">🎂 Подарок именинникам</span>
+        </div>
       </article>
       <article class="hslide hslide--red">
-        <span class="hslide-deco">贈</span>
-        <span class="hslide-tag">🎁 Промокод</span>
-        <h3 class="hslide-title">СТАРТ — ролл в подарок</h3>
-        <p class="hslide-text">«Калифорния кунжут» или «Бонито» в подарок к первому заказу от 1000 ₽.</p>
-        <span class="hslide-pill">Для новых клиентов</span>
+        <div class="hslide-visual">
+          <svg class="hslide-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="gStart" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd97a"/><stop offset="1" stop-color="#e0941a"/>
+              </linearGradient>
+            </defs>
+            <g opacity="0.55" stroke="url(#gStart)" stroke-width="6" stroke-linecap="round">
+              <line x1="14" y1="86" x2="58" y2="86"/>
+              <line x1="6" y1="112" x2="46" y2="112"/>
+              <line x1="18" y1="138" x2="54" y2="138"/>
+            </g>
+            <text x="196" y="128" text-anchor="middle" font-family="'Unbounded',sans-serif" font-weight="900" font-size="74" letter-spacing="1" fill="url(#gStart)">START</text>
+            <rect x="96" y="150" width="200" height="6" rx="3" fill="url(#gStart)" opacity="0.85"/>
+            <text x="196" y="190" text-anchor="middle" font-family="'Unbounded',sans-serif" font-weight="700" font-size="17" letter-spacing="9" fill="#e0941a">ПРОМОКОД</text>
+          </svg>
+        </div>
+        <div class="hslide-body">
+          <span class="hslide-tag">🎁 Промокод</span>
+          <h3 class="hslide-title">Ролл в подарок к первому заказу</h3>
+          <p class="hslide-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито». Заказ от 1000 ₽.</p>
+          <span class="hslide-pill">Для новых клиентов</span>
+        </div>
       </article>
       <article class="hslide hslide--gold">
-        <span class="hslide-deco">大</span>
-        <span class="hslide-tag">📏 Честный размер</span>
-        <h3 class="hslide-title">Роллы +20%, пицца +30%</h3>
-        <p class="hslide-text">Большие порции без наценок и хитростей — каждый день.</p>
-        <span class="hslide-pill">Всегда в меню</span>
+        <div class="hslide-visual">
+          <svg class="hslide-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="gPlus" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd97a"/><stop offset="1" stop-color="#e0941a"/>
+              </linearGradient>
+            </defs>
+            <circle cx="180" cy="100" r="92" fill="none" stroke="url(#gPlus)" stroke-width="3" opacity="0.25" stroke-dasharray="6 9"/>
+            <text x="180" y="124" text-anchor="middle" font-family="'Unbounded',sans-serif" font-weight="900" font-size="80" fill="url(#gPlus)">+20%</text>
+            <text x="180" y="178" text-anchor="middle" font-family="'Unbounded',sans-serif" font-weight="700" font-size="18" letter-spacing="7" fill="#e0941a">БОЛЬШЕ</text>
+          </svg>
+        </div>
+        <div class="hslide-body">
+          <span class="hslide-tag">📏 Честный размер</span>
+          <h3 class="hslide-title">Роллы +20%, пицца +30%</h3>
+          <p class="hslide-text">Порции крупнее обычного — без наценок и хитростей. Наедаемся, а не разглядываем.</p>
+          <span class="hslide-pill">Всегда в меню</span>
+        </div>
       </article>
       <article class="hslide hslide--gold">
-        <span class="hslide-deco">届</span>
-        <span class="hslide-tag">🚗 Доставка</span>
-        <h3 class="hslide-title">Бесплатно от 1200 ₽</h3>
-        <p class="hslide-text">Закажите на 1200 ₽ — привезём бесплатно и горячим за ~60 минут.</p>
-        <span class="hslide-pill">Ежедневно 10:00–23:00</span>
+        <div class="hslide-visual">
+          <svg class="hslide-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+               fill="none" stroke="url(#gDel)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+            <defs>
+              <linearGradient id="gDel" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd97a"/><stop offset="1" stop-color="#e0941a"/>
+              </linearGradient>
+            </defs>
+            <circle cx="104" cy="158" r="26"/>
+            <circle cx="262" cy="158" r="26"/>
+            <path d="M104 158 H150 L172 116 H214"/>
+            <path d="M150 158 H262"/>
+            <path d="M214 116 L238 78 H266"/>
+            <rect x="64" y="86" width="62" height="50" rx="7"/>
+            <path d="M64 106 H126"/>
+            <g opacity="0.45"><path d="M20 112 H54"/><path d="M12 138 H42"/></g>
+          </svg>
+        </div>
+        <div class="hslide-body">
+          <span class="hslide-tag">🚗 Доставка</span>
+          <h3 class="hslide-title">Бесплатно от 1200 ₽</h3>
+          <p class="hslide-text">Соберите заказ на 1200 ₽ — привезём бесплатно и горячим примерно за час. Ежедневно 10:00–23:00.</p>
+          <span class="hslide-pill">По Кабардинке</span>
+        </div>
       </article>
       <div class="hslide-dots" id="heroDots"></div>
     </div>
@@ -500,7 +565,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <div class="promo-deco">贈</div>
         <div class="promo-tag" style="color:#e8675a">🎁 Подарок</div>
         <div class="promo-title">Промокод СТАРТ для первого заказа</div>
-        <div class="promo-text">Введите промокод СТАРТ и получите ролл «Калифорния кунжут» или «Бонито» в подарок к первому заказу от 1000 ₽.</div>
+        <div class="promo-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито» в подарок. Первый заказ от 1000 ₽.</div>
         <div class="promo-pill" style="border-color:rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)">Для новых клиентов</div>
       </div>
     </div>
