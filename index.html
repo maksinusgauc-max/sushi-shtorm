@@ -298,6 +298,17 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .submit-btn{background:var(--gold);color:#000;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;padding:16px;border-radius:10px;border:none;cursor:pointer;width:100%;transition:all .2s;margin-top:6px}
 .submit-btn:hover{background:var(--gold2)}
 .form-divider{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
+.ord-seg{display:flex;gap:8px;margin-bottom:2px}
+.ord-seg button{flex:1;padding:11px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.ord-seg button.active{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.08)}
+.ord-hint{font-size:12px;color:var(--muted);background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.18);border-radius:8px;padding:9px 12px;line-height:1.5}
+.cutlery-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cut-btn{width:42px;height:42px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s}
+.cut-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.08)}
+.cut-input{width:64px;height:42px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:15px;text-align:center;outline:none;font-family:'Manrope',sans-serif}
+.cut-input.active{border-color:var(--gold);color:var(--gold)}
+.cut-check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer;margin-top:10px}
+.cut-check input{accent-color:var(--gold);width:16px;height:16px}
 .form-link{color:var(--gold);cursor:pointer;text-decoration:underline;font-size:13px;text-align:center;margin-top:4px}
 
 /* SUCCESS */
@@ -595,7 +606,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
     <div class="sec-title">Доставляем по Кабардинке</div>
     <div class="delivery-inner">
       <div id="delivery-map">
-        <iframe src="https://yandex.ru/map-widget/v1/?text=%D0%9A%D0%B0%D0%B1%D0%B0%D1%80%D0%B4%D0%B8%D0%BD%D0%BA%D0%B0%2C%20%D0%9E%D0%BA%D1%82%D1%8F%D0%B1%D1%80%D1%8C%D1%81%D0%BA%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%2C%205&z=17"
+        <iframe src="https://yandex.ru/map-widget/v1/?mode=search&oid=109118275643&ol=biz&z=17"
                 width="100%" height="100%" style="border:0;display:block" frameborder="0"
                 allowfullscreen loading="lazy" title="Суши Шторм — Кабардинка, Октябрьская 5"></iframe>
       </div>
@@ -863,12 +874,12 @@ function renderCartContent() {
       <div class="cart-total-row"><span>Сервисный сбор</span><span>${SERVICE_FEE} ₽</span></div>
       <div class="cart-total-row big"><span>Итого</span><span>${total} ₽</span></div>
     </div>
-    ${sub < MIN_ORDER
-      ? `<div style="background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e8675a;text-align:center;margin-bottom:10px">Минимальная сумма заказа — ${MIN_ORDER} ₽. Добавьте ещё на ${MIN_ORDER - sub} ₽</div>
-         <button class="submit-btn" style="opacity:.5;cursor:not-allowed" disabled>Оформить заказ →</button>`
-      : !isOpenNow()
+    ${!isOpenNow()
       ? `<div style="background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e8675a;text-align:center;margin-bottom:10px">🌙 Сейчас мы закрыты. Приём заказов с ${WORK_OPEN}:00 до ${WORK_CLOSE}:00. Можно собрать корзину — оформите утром!</div>
          <button class="submit-btn" style="opacity:.5;cursor:not-allowed" disabled>Оформить заказ →</button>`
+      : sub < MIN_ORDER
+      ? `<div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gold);text-align:center;margin-bottom:10px">Минимум для доставки — ${MIN_ORDER} ₽ (добавьте ещё на ${MIN_ORDER - sub} ₽). Самовывоз — от любой суммы.</div>
+         <button class="submit-btn" onclick="showOrderForm()">Оформить заказ →</button>`
       : `<button class="submit-btn" onclick="showOrderForm()">Оформить заказ →</button>`}
   `;
 }
@@ -876,35 +887,61 @@ function renderCartContent() {
 function showOrderForm() {
   document.getElementById('modalTitle').textContent = '📋 Оформление заказа';
   window._pay = 'card';
+  window._omode = 'delivery';
+  window._cutlery = 1;
+  window._noCutlery = false;
   const a = (currentUser && currentUser.address) || {};
+  window._form = {
+    name: currentUser ? (currentUser.name || '') : '',
+    phone: currentUser ? (currentUser.phone || '') : '',
+    addr: a.street || '', entry: a.entry || '', floor: a.floor || '',
+    preorder: '', comment: ''
+  };
+  renderOrderForm();
+}
+
+function renderOrderForm() {
+  const f = window._form;
+  const mode = window._omode;
+  const noCut = window._noCutlery;
+  const cut = window._cutlery;
+  const presets = [1,2,3,4,5,6];
+  const hint = (mode === 'pickup')
+    ? '<div class="ord-hint">🥡 Заберёте сами: Кабардинка, Октябрьская 5. Самовывоз — от любой суммы.</div>'
+    : (f.addr ? '<div class="ord-hint">📍 Подставлен сохранённый адрес из профиля</div>' : '');
   document.getElementById('modalContent').innerHTML = `
     <div class="form-body">
-      ${a.street ? '<div style="font-size:11px;color:var(--gold);background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:6px;padding:8px 12px">📍 Подставлен сохранённый адрес из профиля</div>' : ''}
+      <div class="ord-seg">
+        <button class="${mode==='delivery'?'active':''}" onclick="setOmode('delivery')">🚴 Доставка</button>
+        <button class="${mode==='pickup'?'active':''}" onclick="setOmode('pickup')">🥡 Самовывоз</button>
+      </div>
+      ${hint}
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Имя</label><input class="form-input" id="fo-name" placeholder="Иван" type="text" value="${currentUser?esc(currentUser.name):''}"></div>
-        <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" id="fo-phone" placeholder="+7 (___) ___-__-__" type="tel" value="${currentUser?esc(currentUser.phone||''):''}"></div>
+        <div class="form-group"><label class="form-label">Имя</label><input class="form-input" id="fo-name" placeholder="Иван" type="text" value="${esc(f.name)}"></div>
+        <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" id="fo-phone" placeholder="+7 (___) ___-__-__" type="tel" value="${esc(f.phone)}"></div>
       </div>
-      <div class="form-group"><label class="form-label">Адрес доставки</label><input class="form-input" id="fo-addr" placeholder="ул. Садовая, д. 12" type="text" value="${esc(a.street||'')}"></div>
+      ${mode==='delivery' ? `
+      <div class="form-group"><label class="form-label">Адрес доставки</label><input class="form-input" id="fo-addr" placeholder="ул. Садовая, д. 12" type="text" value="${esc(f.addr)}"></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Подъезд</label><input class="form-input" id="fo-entry" placeholder="1" type="text" value="${esc(a.entry||'')}"></div>
-        <div class="form-group"><label class="form-label">Этаж / кв.</label><input class="form-input" id="fo-floor" placeholder="3, кв. 15" type="text" value="${esc(a.floor||'')}"></div>
+        <div class="form-group"><label class="form-label">Подъезд</label><input class="form-input" id="fo-entry" placeholder="1" type="text" value="${esc(f.entry)}"></div>
+        <div class="form-group"><label class="form-label">Этаж / кв.</label><input class="form-input" id="fo-floor" placeholder="3, кв. 15" type="text" value="${esc(f.floor)}"></div>
+      </div>` : ''}
+      <div class="form-group">
+        <label class="form-label">Количество приборов</label>
+        <div class="cutlery-row" style="${noCut?'opacity:.4;pointer-events:none':''}">
+          ${presets.map(n=>`<button class="cut-btn ${!noCut&&cut===n?'active':''}" onclick="setCutlery(${n})">${n}</button>`).join('')}
+          <input class="cut-input ${!noCut&&presets.indexOf(cut)===-1?'active':''}" id="fo-cut-custom" type="number" min="1" max="50" inputmode="numeric" placeholder="…" value="${presets.indexOf(cut)===-1?cut:''}" oninput="setCutleryCustom(this.value)">
+        </div>
+        <label class="cut-check"><input type="checkbox" id="fo-nocut" ${noCut?'checked':''} onchange="toggleNoCutlery()"><span>Без приборов</span></label>
       </div>
-      <div class="form-group"><label class="form-label">Время доставки</label>
-        <select class="form-select" id="fo-time">
-          <option>Как можно скорее (~60 мин)</option>
-          <option>Через 1.5 часа</option>
-          <option>Через 2 часа</option>
-          <option>Указать время в комментарии</option>
-        </select>
-      </div>
+      <div class="form-group"><label class="form-label">Предзаказ ко времени <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(необязательно)</span></label><input class="form-input" id="fo-preorder" type="time" value="${esc(f.preorder)}"></div>
       <div class="form-group"><label class="form-label">Способ оплаты</label>
         <div class="pay-methods">
-          <button class="pay-btn active" id="p-card" onclick="selPay('card')">💳 Карта онлайн</button>
-          <button class="pay-btn" id="p-cash" onclick="selPay('cash')">💵 Наличные</button>
-          <button class="pay-btn" id="p-term" onclick="selPay('term')">📱 Терминал</button>
+          <button class="pay-btn ${window._pay==='card'?'active':''}" id="p-card" onclick="selPay('card')">💳 Карта онлайн</button>
+          <button class="pay-btn ${window._pay==='cash'?'active':''}" id="p-cash" onclick="selPay('cash')">💵 Наличные</button>
         </div>
       </div>
-      <div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="fo-comment" placeholder="Без острого, домофон не работает..."></textarea></div>
+      <div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="fo-comment" placeholder="Без острого, домофон не работает...">${esc(f.comment)}</textarea></div>
       <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted);cursor:pointer;margin-top:4px">
         <input type="checkbox" id="fo-consent" checked style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
         <span>Я согласен на обработку персональных данных в соответствии с <a href="/privacy.html" target="_blank" style="color:var(--gold)">политикой конфиденциальности</a></span>
@@ -914,9 +951,34 @@ function showOrderForm() {
   `;
 }
 
+// Сохраняем введённые значения перед перерисовкой формы
+function _saveFormState() {
+  const f = window._form; if (!f) return;
+  ['name','phone','addr','entry','floor','preorder','comment'].forEach(function(k){
+    const e = document.getElementById('fo-' + k);
+    if (e) f[k] = e.value;
+  });
+}
+
+function setOmode(m) { _saveFormState(); window._omode = m; renderOrderForm(); }
+function setCutlery(n) { _saveFormState(); window._cutlery = n; window._noCutlery = false; renderOrderForm(); }
+function setCutleryCustom(v) {
+  var n = parseInt(v, 10);
+  if (n > 0) { window._cutlery = n; window._noCutlery = false; }
+  document.querySelectorAll('.cut-btn').forEach(function(b){ b.classList.remove('active'); });
+}
+function toggleNoCutlery() { _saveFormState(); window._noCutlery = document.getElementById('fo-nocut').checked; renderOrderForm(); }
+function persons(n) {
+  n = Math.abs(n) % 100; var n1 = n % 10;
+  if (n > 10 && n < 20) return 'персон';
+  if (n1 > 1 && n1 < 5) return 'персоны';
+  if (n1 === 1) return 'персона';
+  return 'персон';
+}
+
 function selPay(m) {
   window._pay = m;
-  ['card','cash','term'].forEach(k=>{const b=document.getElementById('p-'+k);if(b)b.classList.toggle('active',k===m)});
+  ['card','cash'].forEach(k=>{const b=document.getElementById('p-'+k);if(b)b.classList.toggle('active',k===m)});
 }
 
 function submitOrder() {
@@ -1426,32 +1488,48 @@ function repeatOrder(itemIds) {
   openCartModal();
 }
 
-// Обновлённый submitOrder с начислением бонусов
+// Обновлённый submitOrder: режим, приборы, предзаказ, отправка во ФронтПад
 const _origSubmit = submitOrder;
 submitOrder = async function() {
-  const name = document.getElementById('fo-name')?.value.trim();
-  const phone = document.getElementById('fo-phone')?.value.trim();
-  const addr = document.getElementById('fo-addr')?.value.trim();
-  const entry = document.getElementById('fo-entry')?.value.trim();
-  const floor = document.getElementById('fo-floor')?.value.trim();
-  const comment = document.getElementById('fo-comment')?.value.trim();
-  if (!name || !phone || !addr) { alert('Заполните имя, телефон и адрес'); return; }
+  _saveFormState();
+  const f = window._form || {};
+  const mode = window._omode || 'delivery';
+  const name = (f.name || '').trim();
+  const phone = (f.phone || '').trim();
+  const addr = mode === 'delivery' ? (f.addr || '').trim() : '';
+  const entry = (f.entry || '').trim();
+  const floor = (f.floor || '').trim();
+  const preorder = (f.preorder || '').trim();
+  const comment = (f.comment || '').trim();
+
+  if (!name || !phone) { alert('Заполните имя и телефон'); return; }
   if (!validPhone(phone)) { alert('Некорректный телефон'); return; }
-  const _sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
-  if (_sub < MIN_ORDER) { alert('Минимальная сумма заказа — ' + MIN_ORDER + ' ₽'); return; }
+  if (mode === 'delivery' && !addr) { alert('Укажите адрес доставки'); return; }
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  if (mode === 'delivery' && sub < MIN_ORDER) { alert('Минимальная сумма для доставки — ' + MIN_ORDER + ' ₽. Для меньшей суммы выберите самовывоз.'); return; }
   if (!isOpenNow()) { alert('Сейчас мы закрыты. Приём заказов с ' + WORK_OPEN + ':00 до ' + WORK_CLOSE + ':00'); return; }
   if (!document.getElementById('fo-consent')?.checked) { alert('Необходимо согласие на обработку персональных данных'); return; }
 
-  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
   const SERVICE_FEE = 49;
-  const deliv = sub >= FREE_DELIVERY ? 0 : DELIVERY_FEE;
+  const deliv = mode === 'pickup' ? 0 : (sub >= FREE_DELIVERY ? 0 : DELIVERY_FEE);
   const total = sub + deliv + SERVICE_FEE;
 
   // Блокируем кнопку на время отправки
   const btn = document.querySelector('.form-body .submit-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Отправляем...'; }
 
-  // ── Отправка заказа во ФронтПад через серверную функцию ──
+  // ── Примечание для кухни ──
+  const payText = { card:'картой онлайн', cash:'наличные' }[window._pay] || '';
+  const cutleryText = window._noCutlery ? 'без приборов' : (window._cutlery + ' ' + persons(window._cutlery));
+  const parts = [];
+  parts.push(mode === 'pickup' ? '🥡 САМОВЫВОЗ (Октябрьская 5)' : '🚴 ДОСТАВКА');
+  parts.push('Приборы: ' + cutleryText);
+  if (preorder) parts.push('⏰ Предзаказ к ' + preorder);
+  if (comment) parts.push('Коммент: ' + comment);
+  parts.push('Оплата: ' + payText);
+  parts.push('Сервисный сбор 49 ₽. Сумма по сайту: ' + total + ' ₽');
+
+  // ── Отправка во ФронтПад ──
   let ordNum = null;
   let sentToFrontpad = false;
   try {
@@ -1460,9 +1538,9 @@ submitOrder = async function() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name, phone,
-        street: addr,
+        street: mode === 'pickup' ? 'Самовывоз (Октябрьская 5)' : addr,
         pod: entry, et: floor,
-        descr: (comment ? comment + '. ' : '') + `Оплата: ${{card:'картой онлайн',cash:'наличные',term:'терминал'}[window._pay] || ''}. Сервисный сбор: 49 ₽. Сумма по сайту: ${total} ₽`,
+        descr: parts.join('. '),
         items: cart.map(c => ({ article: c.article, qty: c.qty }))
       })
     });
@@ -1475,8 +1553,12 @@ submitOrder = async function() {
   if (currentUser) {
     currentUser.orders = currentUser.orders || [];
     currentUser.orders.unshift({num:String(ordNum), date:new Date().toLocaleDateString('ru'), items:cart.map(c=>c.name).join(', '), itemIds:cart.map(c=>({id:c.id,qty:c.qty})), total, status:'Принят'});
+    if (typeof saveUser === 'function') saveUser();
   }
 
+  const waitLine = mode === 'pickup'
+    ? 'Заберите заказ: Кабардинка, Октябрьская 5 🥡'
+    : 'Ожидайте доставку ~60 минут 🚴';
   document.getElementById('modalContent').innerHTML = `
     <div style="text-align:center;padding:16px 0">
       <div style="font-size:56px;margin-bottom:14px">🎉</div>
@@ -1487,7 +1569,7 @@ submitOrder = async function() {
         Спасибо, <b>${esc(name)}</b>!<br>
         Заказ на <b>${total} ₽</b> принят.<br>
         Перезвоним на <b>${esc(phone)}</b> в течение 5 минут.<br>
-        Ожидайте ~60 минут 🚴
+        ${waitLine}${preorder ? '<br>⏰ К ' + esc(preorder) : ''}
       </div>
       ${!sentToFrontpad ? `<div style="margin-top:14px;background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">⚠️ Не удалось передать заказ автоматически. Пожалуйста, продублируйте по телефону: <b>8 (929) 854-11-44</b></div>` : ''}
       <button class="submit-btn" style="margin-top:20px" onclick="closeModal()">Отлично!</button>
