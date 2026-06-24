@@ -1,23 +1,40 @@
 // ═══════════════════════════════════════════════════════════
-// Серверная функция Vercel: создание онлайн-платежа (ЮKassa)
+// Серверная функция Vercel: онлайн-оплата через Т-Бизнес (Т-Банк / Тинькофф)
 // Путь в репозитории: api/payment.js
 // Ключи хранятся в переменных окружения Vercel:
-//   YOOKASSA_SHOP_ID      — идентификатор магазина
-//   YOOKASSA_SECRET_KEY   — секретный ключ
+//   TBANK_TERMINAL_KEY  — Terminal Key (из личного кабинета Т-Бизнес)
+//   TBANK_PASSWORD      — пароль терминала (Secret)
 // (Settings → Environment Variables). В браузер ключи НЕ попадают.
 //
 // Пока ключи не заданы — функция возвращает {error:'not_configured'},
 // и сайт мягко откатывается на «оплату при получении».
+//
+// Документация: https://www.tbank.ru/kassa/dev/payments/  (метод Init)
 // ═══════════════════════════════════════════════════════════
+
+import crypto from 'node:crypto';
+
+// Подпись запроса Т-Банка (Token):
+// берём корневые НЕ-объектные параметры + Password, сортируем по ключу,
+// склеиваем значения и считаем SHA-256.
+function genToken(params, password) {
+  const data = Object.assign({}, params, { Password: password });
+  const keys = Object.keys(data).filter(function (k) {
+    const v = data[k];
+    return v !== undefined && v !== null && typeof v !== 'object';
+  }).sort();
+  const concat = keys.map(function (k) { return String(data[k]); }).join('');
+  return crypto.createHash('sha256').update(concat, 'utf8').digest('hex');
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const SHOP_ID = process.env.YOOKASSA_SHOP_ID;
-  const SECRET  = process.env.YOOKASSA_SECRET_KEY;
-  if (!SHOP_ID || !SECRET) {
+  const TERMINAL = process.env.TBANK_TERMINAL_KEY;
+  const PASSWORD = process.env.TBANK_PASSWORD;
+  if (!TERMINAL || !PASSWORD) {
     // Эквайринг ещё не подключён
     return res.status(503).json({ error: 'not_configured' });
   }
@@ -25,44 +42,45 @@ export default async function handler(req, res) {
   try {
     const { amount, description, return_url, order_id } = req.body || {};
 
-    // Валидация суммы
-    const value = Number(amount);
-    if (!value || value <= 0 || value > 1000000) {
+    // Валидация суммы (рубли → копейки)
+    const rub = Number(amount);
+    if (!rub || rub <= 0 || rub > 1000000) {
       return res.status(400).json({ error: 'bad_amount' });
     }
     if (!return_url || !/^https?:\/\//.test(String(return_url))) {
       return res.status(400).json({ error: 'bad_return_url' });
     }
+    const kopecks = Math.round(rub * 100);
 
-    // Ключ идемпотентности — защита от дублей платежа
-    const idemKey = (order_id ? String(order_id).slice(0, 40) : 'ord') + '-' + Date.now();
-    const auth = Buffer.from(SHOP_ID + ':' + SECRET).toString('base64');
+    // SuccessURL — куда вернуть после оплаты; FailURL — при неуспехе
+    const successUrl = String(return_url);
+    const failUrl = successUrl.indexOf('paid=') !== -1
+      ? successUrl.split('paid=').join('payfail=')
+      : successUrl;
 
-    const r = await fetch('https://api.yookassa.ru/v3/payments', {
+    const params = {
+      TerminalKey: TERMINAL,
+      Amount: kopecks,
+      OrderId: order_id ? String(order_id).slice(0, 36) : ('ord-' + Date.now()),
+      Description: String(description || 'Заказ Суши Шторм').slice(0, 140),
+      SuccessURL: successUrl,
+      FailURL: failUrl,
+    };
+    params.Token = genToken(params, PASSWORD);
+
+    const r = await fetch('https://securepay.tinkoff.ru/v2/Init', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Idempotence-Key': idemKey,
-        'Authorization': 'Basic ' + auth,
-      },
-      body: JSON.stringify({
-        amount: { value: value.toFixed(2), currency: 'RUB' },
-        capture: true,
-        confirmation: { type: 'redirect', return_url: String(return_url) },
-        description: String(description || 'Заказ Суши Шторм').slice(0, 128),
-        metadata: { order_id: order_id ? String(order_id) : '' },
-        // Чек для 54-ФЗ можно добавить здесь в поле "receipt" — см. документацию ЮKassa
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
     });
 
     const data = await r.json();
-    const url = data && data.confirmation && data.confirmation.confirmation_url;
-    if (url) {
-      return res.status(200).json({ ok: true, url, payment_id: data.id });
+    if (data && data.Success && data.PaymentURL) {
+      return res.status(200).json({ ok: true, url: data.PaymentURL, payment_id: data.PaymentId });
     }
 
-    console.error('YooKassa error:', data);
-    return res.status(502).json({ error: 'yookassa_error', detail: (data && data.description) || 'unknown' });
+    console.error('T-Bank error:', data);
+    return res.status(502).json({ error: 'tbank_error', detail: (data && (data.Message || data.Details)) || 'unknown' });
   } catch (e) {
     console.error('Payment handler error:', e);
     return res.status(500).json({ error: 'server_error' });

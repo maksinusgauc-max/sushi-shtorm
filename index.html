@@ -1640,15 +1640,20 @@ if (document.readyState === 'loading') {
   initMenu();
 }
 
-// Возврат с онлайн-оплаты (ЮKassa redirect → /?paid=НОМЕР)
+// Возврат с онлайн-оплаты Т-Банка (redirect → /?paid=НОМЕР или /?payfail=НОМЕР)
 (function paymentReturn(){
   try {
     var params = new URLSearchParams(location.search);
     var paid = params.get('paid');
-    if (!paid) return;
+    var failed = params.get('payfail');
+    if (!paid && !failed) return;
     if (history.replaceState) history.replaceState({}, '', location.pathname);
     setTimeout(function(){
-      alert('Спасибо! Оплата заказа № ' + paid + ' обрабатывается. Если оплата прошла — заказ уже готовится. Чек придёт на телефон или почту.');
+      if (paid) {
+        alert('Спасибо! Оплата заказа № ' + paid + ' обрабатывается. Если оплата прошла — заказ уже готовится. Чек придёт на телефон или почту.');
+      } else {
+        alert('Оплата заказа № ' + failed + ' не завершена. Заказ принят — можно оплатить при получении или позвонить нам: 8 (929) 854-11-44.');
+      }
     }, 300);
   } catch(e){}
 })();
