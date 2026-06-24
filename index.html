@@ -906,8 +906,12 @@ function renderOrderForm() {
   const noCut = window._noCutlery;
   const cut = window._cutlery;
   const presets = [1,2,3,4,5,6];
+  const sub = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const shortDelivery = (mode === 'delivery' && sub < MIN_ORDER);
   const hint = (mode === 'pickup')
     ? '<div class="ord-hint">🥡 Заберёте сами: Кабардинка, Октябрьская 5. Самовывоз — от любой суммы.</div>'
+    : shortDelivery
+    ? `<div class="ord-hint" style="color:#e8675a;background:rgba(214,59,47,.08);border-color:rgba(214,59,47,.28)">⚠️ В корзине ${sub} ₽ — для доставки нужно от ${MIN_ORDER} ₽. Добавьте ещё на ${MIN_ORDER - sub} ₽ или переключитесь на самовывоз.</div>`
     : (f.addr ? '<div class="ord-hint">📍 Подставлен сохранённый адрес из профиля</div>' : '');
   document.getElementById('modalContent').innerHTML = `
     <div class="form-body">
@@ -946,7 +950,7 @@ function renderOrderForm() {
         <input type="checkbox" id="fo-consent" checked style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
         <span>Я согласен на обработку персональных данных в соответствии с <a href="/privacy.html" target="_blank" style="color:var(--gold)">политикой конфиденциальности</a></span>
       </label>
-      <button class="submit-btn" onclick="submitOrder()">Подтвердить заказ 🎉</button>
+      <button class="submit-btn" ${shortDelivery?'disabled style="opacity:.5;cursor:not-allowed"':''} onclick="submitOrder()">${shortDelivery ? `Минимум для доставки — ${MIN_ORDER} ₽` : (window._pay==='card' ? 'Оплатить онлайн →' : 'Подтвердить заказ 🎉')}</button>
     </div>
   `;
 }
@@ -979,6 +983,8 @@ function persons(n) {
 function selPay(m) {
   window._pay = m;
   ['card','cash'].forEach(k=>{const b=document.getElementById('p-'+k);if(b)b.classList.toggle('active',k===m)});
+  const sb = document.querySelector('.form-body .submit-btn');
+  if (sb && !sb.disabled) sb.textContent = m === 'card' ? 'Оплатить онлайн →' : 'Подтвердить заказ 🎉';
 }
 
 function submitOrder() {
@@ -1556,6 +1562,32 @@ submitOrder = async function() {
     if (typeof saveUser === 'function') saveUser();
   }
 
+  // ── Онлайн-оплата картой (ЮKassa) ──
+  // Если эквайринг подключён (заданы ключи на сервере) — уводим на оплату.
+  // Если ещё не подключён — заказ уже принят, мягко откатываемся на оплату при получении.
+  window._payNote = '';
+  if (window._pay === 'card') {
+    try {
+      const pr = await fetch('/api/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          order_id: String(ordNum),
+          description: 'Заказ № ' + ordNum + ' — Суши Шторм',
+          return_url: location.origin + '/?paid=' + encodeURIComponent(String(ordNum))
+        })
+      });
+      const pd = await pr.json().catch(function(){ return {}; });
+      if (pd && pd.ok && pd.url) { window.location.href = pd.url; return; }
+      window._payNote = (pd && pd.error === 'not_configured')
+        ? 'Онлайн-оплата скоро будет доступна — пока оплатите при получении.'
+        : 'Не удалось начать онлайн-оплату. Оплатите при получении или продублируйте по телефону.';
+    } catch (e) {
+      window._payNote = 'Не удалось начать онлайн-оплату. Оплатите при получении.';
+    }
+  }
+
   const waitLine = mode === 'pickup'
     ? 'Заберите заказ: Кабардинка, Октябрьская 5 🥡'
     : 'Ожидайте доставку ~60 минут 🚴';
@@ -1572,6 +1604,7 @@ submitOrder = async function() {
         ${waitLine}${preorder ? '<br>⏰ К ' + esc(preorder) : ''}
       </div>
       ${!sentToFrontpad ? `<div style="margin-top:14px;background:rgba(214,59,47,.08);border:1px solid rgba(214,59,47,.25);border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">⚠️ Не удалось передать заказ автоматически. Пожалуйста, продублируйте по телефону: <b>8 (929) 854-11-44</b></div>` : ''}
+      ${window._payNote ? `<div style="margin-top:14px;background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">💳 ${esc(window._payNote)}</div>` : ''}
       <button class="submit-btn" style="margin-top:20px" onclick="closeModal()">Отлично!</button>
     </div>
   `;
@@ -1606,6 +1639,19 @@ if (document.readyState === 'loading') {
 } else {
   initMenu();
 }
+
+// Возврат с онлайн-оплаты (ЮKassa redirect → /?paid=НОМЕР)
+(function paymentReturn(){
+  try {
+    var params = new URLSearchParams(location.search);
+    var paid = params.get('paid');
+    if (!paid) return;
+    if (history.replaceState) history.replaceState({}, '', location.pathname);
+    setTimeout(function(){
+      alert('Спасибо! Оплата заказа № ' + paid + ' обрабатывается. Если оплата прошла — заказ уже готовится. Чек придёт на телефон или почту.');
+    }, 300);
+  } catch(e){}
+})();
 
 // Restore session
 const savedEmail = localStorage.getItem('ss_current_email');
