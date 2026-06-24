@@ -40,6 +40,7 @@ body.light .form-input,body.light .form-select,body.light .form-textarea{backgro
 body.light img{background:#e8e0d0}
 body.light .chat-bubble.bot{background:#fff;border:1px solid var(--border)}
 body.light .hero-sub{color:rgba(26,22,16,.6)}
+body.light .nav-logo img{background:transparent;box-shadow:none;padding:0}
 body.light .chat-input-row input{background:#f5f0e8;color:var(--text)}
 /* Светлая тема: карусель акций + промо-карточки (две колонки) */
 body.light .hslide--gold{background:linear-gradient(135deg,#fff6e2,#fcecca)}
@@ -99,8 +100,8 @@ img{display:block;max-width:100%;background:#1a1a1a}
 
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);background:rgba(13,13,13,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px}
-.nav-logo{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:900;letter-spacing:.03em;white-space:nowrap;flex-shrink:0}
-.nav-logo span{color:var(--gold)}
+.nav-logo{display:inline-flex;align-items:center;flex-shrink:0;text-decoration:none;line-height:0}
+.nav-logo img{height:32px;width:auto;display:block;padding:7px 13px;border-radius:10px;background:#f6f1e8;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .nav-link{padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap;transition:all .2s;background:none;border:none;cursor:pointer}
@@ -361,6 +362,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
   .dish-img-wrap,.dish-img{height:150px}
   .form-row{grid-template-columns:1fr}
   .modal{padding:22px 16px}
+  #delivery-map{height:300px}
 }
 @media(max-width:480px){
   .hero h1{font-size:28px}
@@ -374,7 +376,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">СУШИ <span>ШТОРМ</span></div>
+  <a class="nav-logo" href="#" aria-label="Суши Шторм — на главную"><img src="img/logo.png" alt="Суши Шторм"></a>
   <div class="nav-links">
     <button class="nav-link" onclick="navScroll('menu-section')">Меню</button>
     <button class="nav-link" onclick="navScroll('promo-section')">Акции</button>
@@ -578,119 +580,10 @@ img{display:block;max-width:100%;background:#1a1a1a}
     <div class="sec-label">Зона доставки</div>
     <div class="sec-title">Доставляем по Кабардинке</div>
     <div class="delivery-inner">
-      <div style="height:420px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;position:relative;background:#141a1a">
-        <svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
-          <defs>
-            <radialGradient id="zone1" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#4CAF50" stop-opacity="0.18"/>
-              <stop offset="100%" stop-color="#4CAF50" stop-opacity="0.04"/>
-            </radialGradient>
-            <radialGradient id="zone2" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#FF9800" stop-opacity="0.12"/>
-              <stop offset="100%" stop-color="#FF9800" stop-opacity="0.02"/>
-            </radialGradient>
-          </defs>
-
-          <!-- Фон — море и суша -->
-          <rect width="600" height="420" fill="#0d1a1a"/>
-
-          <!-- Море (Чёрное море — снизу) -->
-          <path d="M0,300 Q80,280 150,295 Q220,310 300,300 Q380,290 460,305 Q530,315 600,300 L600,420 L0,420 Z" fill="#0a1520" opacity="0.9"/>
-          <path d="M0,320 Q100,305 200,318 Q300,330 400,315 Q500,302 600,320 L600,420 L0,420 Z" fill="#0c1f2e" opacity="0.7"/>
-
-          <!-- Береговая линия — текст -->
-          <text x="50" y="395" font-size="10" fill="rgba(100,160,200,0.4)" font-family="sans-serif">Чёрное море</text>
-
-          <!-- Улицы (схематично) -->
-          <g stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none">
-            <!-- горизонтальные -->
-            <line x1="0" y1="150" x2="600" y2="155"/>
-            <line x1="0" y1="200" x2="600" y2="198"/>
-            <line x1="0" y1="250" x2="600" y2="248"/>
-            <line x1="50" y1="120" x2="550" y2="118"/>
-            <line x1="80" y1="175" x2="520" y2="172"/>
-            <!-- вертикальные -->
-            <line x1="150" y1="80" x2="148" y2="310"/>
-            <line x1="250" y1="80" x2="248" y2="310"/>
-            <line x1="350" y1="80" x2="348" y2="310"/>
-            <line x1="450" y1="80" x2="448" y2="310"/>
-            <line x1="100" y1="100" x2="98" y2="300"/>
-            <line x1="200" y1="90" x2="198" y2="305"/>
-            <line x1="300" y1="90" x2="298" y2="300"/>
-            <line x1="400" y1="90" x2="398" y2="305"/>
-            <line x1="500" y1="100" x2="498" y2="300"/>
-            <!-- диагональные -->
-            <line x1="0" y1="220" x2="200" y2="180"/>
-            <line x1="400" y1="190" x2="600" y2="220"/>
-          </g>
-
-          <!-- Главная дорога -->
-          <path d="M0,230 Q150,215 300,225 Q450,235 600,220" stroke="rgba(255,255,255,0.12)" stroke-width="3" fill="none"/>
-          <text x="140" y="218" font-size="9" fill="rgba(255,255,255,0.25)" font-family="sans-serif">Геленджикское шоссе</text>
-
-          <!-- Зона 2 — пригород (оранжевая, большая) -->
-          <ellipse cx="300" cy="210" rx="230" ry="155" fill="url(#zone2)"/>
-          <ellipse cx="300" cy="210" rx="230" ry="155" fill="none" stroke="#FF9800" stroke-width="1.5" stroke-dasharray="8,5" opacity="0.5"/>
-
-          <!-- Зона 1 — Кабардинка (зелёная, малая) -->
-          <ellipse cx="300" cy="210" rx="130" ry="88" fill="url(#zone1)"/>
-          <ellipse cx="300" cy="210" rx="130" ry="88" fill="none" stroke="#4CAF50" stroke-width="2" opacity="0.7"/>
-
-          <!-- Блоки зданий (схематично) -->
-          <g fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.06)" stroke-width="0.5">
-            <rect x="160" y="135" width="28" height="18" rx="2"/>
-            <rect x="200" y="130" width="22" height="15" rx="2"/>
-            <rect x="240" y="140" width="18" height="12" rx="2"/>
-            <rect x="310" y="133" width="25" height="16" rx="2"/>
-            <rect x="345" y="138" width="20" height="14" rx="2"/>
-            <rect x="165" y="165" width="30" height="20" rx="2"/>
-            <rect x="210" y="162" width="24" height="18" rx="2"/>
-            <rect x="270" y="160" width="28" height="18" rx="2"/>
-            <rect x="320" y="165" width="22" height="16" rx="2"/>
-            <rect x="360" y="160" width="26" height="20" rx="2"/>
-            <rect x="170" y="215" width="26" height="17" rx="2"/>
-            <rect x="215" y="212" width="20" height="14" rx="2"/>
-            <rect x="260" y="218" width="22" height="15" rx="2"/>
-            <rect x="330" y="210" width="28" height="18" rx="2"/>
-            <rect x="375" y="215" width="22" height="14" rx="2"/>
-            <rect x="120" y="175" width="22" height="14" rx="2"/>
-            <rect x="430" y="170" width="24" height="16" rx="2"/>
-            <rect x="410" y="200" width="20" height="13" rx="2"/>
-            <rect x="130" y="200" width="18" height="13" rx="2"/>
-          </g>
-
-          <!-- Метка ресторана -->
-          <g transform="translate(300,210)">
-            <!-- тень -->
-            <ellipse cx="0" cy="22" rx="12" ry="4" fill="rgba(0,0,0,0.4)"/>
-            <!-- пин -->
-            <path d="M0,-24 C-10,-24 -16,-18 -16,-10 C-16,2 0,20 0,20 C0,20 16,2 16,-10 C16,-18 10,-24 0,-24 Z" fill="#f0b429" stroke="#000" stroke-width="1.5"/>
-            <circle cx="0" cy="-10" r="6" fill="#000"/>
-          </g>
-
-          <!-- Подпись метки -->
-          <rect x="214" y="232" width="172" height="28" rx="6" fill="rgba(13,13,13,0.88)" stroke="rgba(240,180,41,0.35)" stroke-width="1"/>
-          <text x="300" y="250" text-anchor="middle" font-size="11" font-weight="bold" fill="#f0b429" font-family="sans-serif">📍 Суши Шторм · Кабардинка</text>
-
-          <!-- Легенда -->
-          <rect x="14" y="14" width="175" height="76" rx="8" fill="rgba(13,13,13,0.88)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-          <circle cx="32" cy="38" r="7" fill="rgba(76,175,80,0.2)" stroke="#4CAF50" stroke-width="1.5"/>
-          <text x="46" y="43" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Кабардинка — бесплатно</text>
-          <circle cx="32" cy="62" r="7" fill="rgba(255,152,0,0.15)" stroke="#FF9800" stroke-width="1.5" stroke-dasharray="3,2"/>
-          <text x="46" y="67" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Пригород — 100 ₽</text>
-          <circle cx="32" cy="80" r="5" fill="#f0b429"/>
-          <text x="46" y="84" font-size="11" fill="rgba(255,255,255,0.8)" font-family="sans-serif">Ресторан</text>
-
-          <!-- Компас -->
-          <g transform="translate(565,35)">
-            <circle r="18" fill="rgba(13,13,13,0.7)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-            <text x="0" y="-6" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.6)" font-family="sans-serif">С</text>
-            <text x="0" y="14" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">Ю</text>
-            <text x="-12" y="4" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">З</text>
-            <text x="12" y="4" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.3)" font-family="sans-serif">В</text>
-            <line x1="0" y1="-12" x2="0" y2="-4" stroke="#f0b429" stroke-width="1.5"/>
-          </g>
-        </svg>
+      <div id="delivery-map">
+        <iframe src="https://yandex.ru/map-widget/v1/?text=%D0%9A%D0%B0%D0%B1%D0%B0%D1%80%D0%B4%D0%B8%D0%BD%D0%BA%D0%B0%2C%20%D0%9E%D0%BA%D1%82%D1%8F%D0%B1%D1%80%D1%8C%D1%81%D0%BA%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%2C%205&z=17"
+                width="100%" height="100%" style="border:0;display:block" frameborder="0"
+                allowfullscreen loading="lazy" title="Суши Шторм — Кабардинка, Октябрьская 5"></iframe>
       </div>
       <div>
         <div class="deliv-block">
