@@ -139,6 +139,11 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .hero-stats{display:flex;gap:32px}
 .hstat .num{font-family:'Unbounded',sans-serif;font-size:26px;font-weight:900;color:var(--gold)}
 .hstat .lbl{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+.hero-quick{margin-top:34px}
+.hero-quick-label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.hero-quick-row{display:flex;flex-wrap:wrap;gap:10px}
+.hero-chip{font-size:14px;font-weight:600;padding:10px 18px;border-radius:24px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.hero-chip:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.07)}
 .hero-right{position:relative;overflow:hidden}
 .hero-right::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 35%);z-index:1;pointer-events:none}
 .hero-img{width:100%;height:100%;object-fit:cover}
@@ -420,6 +425,15 @@ img{display:block;max-width:100%;background:#1a1a1a}
       <div class="hstat"><div class="num">60 мин</div><div class="lbl">Доставка</div></div>
       <div class="hstat"><div class="num">10–23</div><div class="lbl">Ежедневно</div></div>
     </div>
+    <div class="hero-quick">
+      <span class="hero-quick-label">Быстрый выбор</span>
+      <div class="hero-quick-row">
+        <button class="hero-chip" onclick="goToMenu('sets')">🎁 Сеты</button>
+        <button class="hero-chip" onclick="goToMenu('rolls')">🌀 Роллы</button>
+        <button class="hero-chip" onclick="goToMenu('baked')">🔥 Запечённые</button>
+        <button class="hero-chip" onclick="goToMenu('pizza')">🍕 Пицца</button>
+      </div>
+    </div>
   </div>
   <div class="hero-right">
     <div class="hero-kanji">嵐</div>
@@ -458,7 +472,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <div class="hslide-body">
           <span class="hslide-tag">🎁 Промокод</span>
           <h3 class="hslide-title">Ролл в подарок к первому заказу</h3>
-          <p class="hslide-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито». Заказ от 1000 ₽.</p>
+          <p class="hslide-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито». Заказ от 1500 ₽.</p>
           <span class="hslide-pill">Для новых клиентов</span>
         </div>
       </article>
@@ -503,8 +517,8 @@ img{display:block;max-width:100%;background:#1a1a1a}
         </div>
         <div class="hslide-body">
           <span class="hslide-tag">🚗 Доставка</span>
-          <h3 class="hslide-title">Бесплатно от 1200 ₽</h3>
-          <p class="hslide-text">Соберите заказ на 1200 ₽ — привезём бесплатно и горячим примерно за час. Ежедневно 10:00–23:00.</p>
+          <h3 class="hslide-title">Бесплатно по Кабардинке</h3>
+          <p class="hslide-text">Привезём горячим примерно за час, ежедневно 10:00–23:00. Самовывоз — от любой суммы.</p>
           <span class="hslide-pill">По Кабардинке</span>
         </div>
       </article>
@@ -567,7 +581,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
         <div class="promo-deco">贈</div>
         <div class="promo-tag" style="color:#e8675a">🎁 Подарок</div>
         <div class="promo-title">Промокод СТАРТ для первого заказа</div>
-        <div class="promo-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито» в подарок. Первый заказ от 1000 ₽.</div>
+        <div class="promo-text">Назовите промокод СТАРТ при подтверждении заказа — и мы добавим ролл «Калифорния кунжут» или «Бонито» в подарок. Первый заказ от 1500 ₽.</div>
         <div class="promo-pill" style="border-color:rgba(214,59,47,.3);color:#e8675a;background:rgba(214,59,47,.08)">Для новых клиентов</div>
       </div>
     </div>
@@ -588,18 +602,21 @@ img{display:block;max-width:100%;background:#1a1a1a}
       <div>
         <div class="deliv-block">
           <div class="deliv-block-title">📦 Условия доставки</div>
-          <div class="deliv-row"><span class="lbl">Минимальный заказ</span><span class="val">500 ₽</span></div>
-          <div class="deliv-row"><span class="lbl">Доставка от 1200 ₽</span><span class="val free">Бесплатно</span></div>
-          <div class="deliv-row"><span class="lbl">Доставка до 1200 ₽</span><span class="val">100 ₽</span></div>
+          <div class="deliv-row"><span class="lbl">Минимальный заказ</span><span class="val">1200 ₽</span></div>
+          <div class="deliv-row"><span class="lbl">Доставка по Кабардинке</span><span class="val free">Бесплатно</span></div>
+          <div class="deliv-row"><span class="lbl">Самовывоз</span><span class="val free">от любой суммы</span></div>
           <div class="deliv-row"><span class="lbl">Время доставки</span><span class="val">~60 мин</span></div>
           <div class="deliv-row"><span class="lbl">Работаем</span><span class="val">10:00 – 23:00</span></div>
         </div>
         <div class="deliv-block">
-          <div class="deliv-block-title">🗺 Зоны</div>
+          <div class="deliv-block-title">🗺 Куда доставляем</div>
           <div class="zone-legend">
-            <div class="zone-item"><div class="zone-dot" style="background:#4CAF50"></div>Кабардинка — бесплатно от 1200 ₽</div>
-            <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>Пригород — 100 ₽</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#4CAF50"></div>Кабардинка — бесплатно</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>Сухумское шоссе 1, 2, 2А, 62 — 100 ₽</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>ул. Мира 1–4 — 100 ₽</div>
+            <div class="zone-item"><div class="zone-dot" style="background:#FF9800"></div>ул. Капитана Котанова — 100 ₽</div>
           </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6">По Кабардинке доставка бесплатная. Самовывоз — от любой суммы. По другим адресам уточняйте по телефону.</div>
         </div>
         <div class="deliv-block" style="margin-bottom:0">
           <a href="tel:89298541144" style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700;color:var(--gold);display:block;margin-bottom:6px">8 (929) 854-11-44</a>
@@ -692,13 +709,14 @@ img{display:block;max-width:100%;background:#1a1a1a}
 function getDishes() { return (window.MENU && window.MENU.length) ? window.MENU : []; }
 
 let cart = [];
-const MIN_ORDER = 500;       // минимальная сумма заказа, ₽
+const MIN_ORDER = 1200;      // минимальная сумма заказа, ₽
 const FREE_DELIVERY = 1200;  // бесплатная доставка от этой суммы, ₽
 const DELIVERY_FEE = 100;    // стоимость доставки ниже порога, ₽
 const WORK_OPEN = 10;        // открытие, час
 const WORK_CLOSE = 23;       // закрытие, час
 function isOpenNow(){ const h = new Date().getHours(); return h >= WORK_OPEN && h < WORK_CLOSE; }
 let currentUser = null;
+let currentCat = 'all';      // активная категория меню
 
 // ─── NAVIGATION ───
 function navScroll(id) {
@@ -759,9 +777,21 @@ function openDishModal(id) {
 }
 
 function filterMenu(cat, btn) {
+  currentCat = cat;
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderMenu(cat);
+}
+
+// Быстрый переход из hero: подсветить категорию, отрендерить, проскроллить
+function goToMenu(cat) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(function(b){
+    var oc = b.getAttribute('onclick') || '';
+    b.classList.toggle('active', oc.indexOf("'" + cat + "'") !== -1);
+  });
+  renderMenu(cat);
+  navScroll('menu-section');
 }
 
 // ─── CART ───
