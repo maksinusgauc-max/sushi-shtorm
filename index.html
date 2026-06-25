@@ -1035,8 +1035,17 @@ function esc(str) {
     .split('"').join('&quot;').split("'").join('&#39;');
 }
 
-// SHA-256 хэш пароля с солью (Web Crypto API)
-async function hashPassword(password, salt) {
+// Хэш пароля: PBKDF2 (медленный, стойкий к перебору). Web Crypto API.
+async function hashPassword(password, salt, iterations) {
+  iterations = iterations || 150000;
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: enc.encode(salt), iterations: iterations, hash: 'SHA-256' }, keyMaterial, 256);
+  return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Старый алгоритм (одиночный SHA-256) — только для проверки и апгрейда старых аккаунтов
+async function legacyHash(password, salt) {
   const data = new TextEncoder().encode(salt + ':' + password);
   const buf = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
@@ -1110,18 +1119,24 @@ async function doLogin() {
   const pass = document.getElementById('a-pass').value;
   if (!email || !pass) { alert('Введите email и пароль'); return; }
 
-  // ─── Спец-вход для сотрудников: режим планшета (киоск) ───
-  // Логин и пароль смени на свои. Этот вход ведёт в /kiosk.html
-  const ADMIN_LOGIN = 'admin';
-  const ADMIN_PASS = 'storm2026';
-  if (email.toLowerCase() === ADMIN_LOGIN && pass === ADMIN_PASS) {
-    sessionStorage.setItem('kiosk_ok', '1'); // киоск увидит и не спросит пароль повторно
-    window.location.href = '/kiosk.html';
-    return;
-  }
-
   const emailLower = email.toLowerCase();
-  if (!validEmail(emailLower)) { alert('Некорректный email'); return; }
+
+  // ─── Вход сотрудника (киоск) ───
+  // Если ввели не email (например, «admin») — это вход сотрудника, проверяем на сервере.
+  // Пароль НЕ хранится в коде, только в Vercel → Environment Variables (ADMIN_PASS).
+  if (!validEmail(emailLower)) {
+    try {
+      const r = await fetch('/api/admin-login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login: email.trim(), pass })
+      });
+      const d = await r.json().catch(function(){ return {}; });
+      if (d && d.ok) { sessionStorage.setItem('kiosk_ok', '1'); window.location.href = '/kiosk.html'; return; }
+      if (d && d.error === 'not_configured') { alert('Вход для сотрудников не настроен. Задайте ADMIN_PASS в настройках Vercel.'); return; }
+      if (d && d.error === 'too_many') { alert('Слишком много попыток. Подождите минуту.'); return; }
+    } catch (e) {}
+    alert('Неверный логин или пароль'); return;
+  }
 
   // Проверка блокировки
   const attempts = getLoginAttempts(emailLower);
@@ -1134,12 +1149,26 @@ async function doLogin() {
   const saved = JSON.parse(localStorage.getItem('ss_user_' + emailLower) || 'null');
   if (!saved) { recordFailedLogin(emailLower); alert('Неверный email или пароль'); return; }
 
-  const hash = await hashPassword(pass, saved.salt);
-  if (hash !== saved.passHash) {
+  // Проверка пароля (с учётом миграции старого формата)
+  let ok;
+  if (saved.algo === 'pbkdf2') {
+    ok = (await hashPassword(pass, saved.salt, saved.iter || 150000)) === saved.passHash;
+  } else {
+    ok = (await legacyHash(pass, saved.salt)) === saved.passHash;
+  }
+  if (!ok) {
     recordFailedLogin(emailLower);
     const left = LOGIN_MAX_ATTEMPTS - getLoginAttempts(emailLower).count;
     alert(`Неверный email или пароль${left > 0 && left < 3 ? `. Осталось попыток: ${left}` : ''}`);
     return;
+  }
+
+  // Апгрейд старого аккаунта на PBKDF2 при успешном входе
+  if (saved.algo !== 'pbkdf2') {
+    saved.salt = genSalt();
+    saved.passHash = await hashPassword(pass, saved.salt);
+    saved.algo = 'pbkdf2'; saved.iter = 150000;
+    localStorage.setItem('ss_user_' + emailLower, JSON.stringify(saved));
   }
 
   clearLoginAttempts(emailLower);
@@ -1167,7 +1196,7 @@ async function doRegister() {
 
   const salt = genSalt();
   const passHash = await hashPassword(pass, salt);
-  currentUser = {name, phone, email, salt, passHash, orders:[], address:null};
+  currentUser = {name, phone, email, salt, passHash, algo:'pbkdf2', iter:150000, orders:[], address:null};
   saveUser();
   localStorage.setItem('ss_current_email', email);
   updateUserNav();
@@ -1468,11 +1497,17 @@ async function changePassword() {
   const oldP = document.getElementById('pf-oldpass').value;
   const newP = document.getElementById('pf-newpass').value;
   if (!oldP || !newP) { alert('Заполните оба поля'); return; }
-  const oldHash = await hashPassword(oldP, currentUser.salt);
-  if (oldHash !== currentUser.passHash) { alert('Текущий пароль неверный'); return; }
+  let okOld;
+  if (currentUser.algo === 'pbkdf2') {
+    okOld = (await hashPassword(oldP, currentUser.salt, currentUser.iter || 150000)) === currentUser.passHash;
+  } else {
+    okOld = (await legacyHash(oldP, currentUser.salt)) === currentUser.passHash;
+  }
+  if (!okOld) { alert('Текущий пароль неверный'); return; }
   if (newP.length < 8 || !/[a-zA-Zа-яА-Я]/.test(newP) || !/\d/.test(newP)) { alert('Новый пароль: минимум 8 символов, буквы и цифры'); return; }
   currentUser.salt = genSalt();
   currentUser.passHash = await hashPassword(newP, currentUser.salt);
+  currentUser.algo = 'pbkdf2'; currentUser.iter = 150000;
   saveUser();
   document.getElementById('pf-oldpass').value = '';
   document.getElementById('pf-newpass').value = '';
