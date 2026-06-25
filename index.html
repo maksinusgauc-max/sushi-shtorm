@@ -280,6 +280,8 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .cart-total{background:var(--card);border-radius:8px;padding:14px;margin-bottom:16px}
 .cart-total-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
 .cart-total-row.big{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;color:var(--gold);padding-top:10px;margin-top:8px;border-top:1px solid var(--border)}
+.cart-clear-btn{display:block;width:100%;margin-top:10px;padding:11px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;transition:border-color .2s,color .2s;font-family:'Manrope',sans-serif}
+.cart-clear-btn:hover{border-color:var(--red);color:var(--red)}
 .free-delivery-bar{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#4caf50;margin-bottom:14px;text-align:center}
 
 /* ORDER & AUTH FORM */
@@ -669,7 +671,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
       <a onclick="navScroll('contacts-section')">Контакты</a>
       <a href="/privacy.html">Политика конфиденциальности</a>
     </div>
-    <div class="footer-copy">© 2025–2026 Суши Шторм. Ежедневно 10:00–23:00</div>
+    <div class="footer-copy">© 2025–2026 Суши Шторм. Ежедневно 10:00–23:00 · <a onclick="showStaffMenu()" style="cursor:pointer;text-decoration:underline">Сотрудникам</a></div>
   </div>
 </footer>
 
@@ -892,7 +894,16 @@ function renderCartContent() {
       ? `<div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--gold);text-align:center;margin-bottom:10px">Минимум для доставки — ${MIN_ORDER} ₽ (добавьте ещё на ${MIN_ORDER - sub} ₽). Самовывоз — от любой суммы.</div>
          <button class="submit-btn" onclick="showOrderForm()">Оформить заказ →</button>`
       : `<button class="submit-btn" onclick="showOrderForm()">Оформить заказ →</button>`}
+    <button class="cart-clear-btn" onclick="clearCart()">🗑 Очистить корзину</button>
   `;
+}
+
+function clearCart() {
+  if (!cart.length) return;
+  if (!confirm('Очистить корзину полностью?')) return;
+  cart = [];
+  updateCount();
+  renderCartContent();
 }
 
 function showOrderForm() {
@@ -1080,6 +1091,21 @@ function clearLoginAttempts(email) { localStorage.removeItem('ss_la_' + email); 
 function openUserModal() {
   if (currentUser) { showProfile(); }
   else { showLogin(); }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// Меню для сотрудников: переход в кассу (киоск) или админ-панель.
+// Обе страницы защищены паролем на сервере (Vercel Basic Auth) — без него не откроются.
+function showStaffMenu() {
+  document.getElementById('modalTitle').textContent = '🔐 Вход для сотрудников';
+  document.getElementById('modalContent').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:2px">Служебные разделы защищены паролем. Браузер попросит логин и пароль перед открытием.</p>
+      <a class="submit-btn" href="/kiosk.html" style="text-decoration:none;text-align:center;display:block">🖥 Касса (киоск)</a>
+      <a class="submit-btn" href="/site-admin.html" style="text-decoration:none;text-align:center;display:block;background:transparent;border:1px solid var(--gold);color:var(--gold)">🍽 Меню сайта (цены, наличие)</a>
+      <a class="submit-btn" href="/admin.html" style="text-decoration:none;text-align:center;display:block;background:transparent;border:1px solid var(--border);color:var(--muted)">⚙️ Админка киоска</a>
+    </div>
+  `;
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -1687,6 +1713,27 @@ if (document.readyState === 'loading') {
 } else {
   initMenu();
 }
+
+// ─── Меню с сервера (Supabase через /api/menu) ───
+// Если сервер настроен и ответил — берём актуальное меню оттуда.
+// Если нет (или ошибка) — тихо остаёмся на статическом menu.js.
+async function loadServerMenu() {
+  try {
+    const r = await fetch('/api/menu');
+    if (!r.ok) return;                       // 503 not_configured и т.п. — откат на menu.js
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) return;
+    // маппинг полей БД -> формат сайта; стоп-лист (available=false) скрываем
+    window.MENU = data
+      .filter(function(d){ return d.available !== false; })
+      .map(function(d){
+        return { id:d.id, article:d.article, cat:d.cat, name:d.name, price:d.price,
+                 img:d.img, ph:d.ph, desc:d.descr, badge:d.badge || undefined };
+      });
+    renderMenu(currentCat || 'all');         // перерисовываем с серверными данными
+  } catch (e) { /* оставляем menu.js */ }
+}
+loadServerMenu();
 
 // Возврат с онлайн-оплаты Т-Банка (redirect → /?paid=НОМЕР или /?payfail=НОМЕР)
 (function paymentReturn(){
