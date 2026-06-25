@@ -295,6 +295,7 @@ img{display:block;max-width:100%;background:#1a1a1a}
 .pay-methods{display:flex;gap:8px;flex-wrap:wrap}
 .pay-btn{flex:1;min-width:100px;padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;text-align:center}
 .pay-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.08)}
+.pay-info{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.18);border-radius:8px;padding:9px 12px}
 .submit-btn{background:var(--gold);color:#000;font-family:'Unbounded',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;padding:16px;border-radius:10px;border:none;cursor:pointer;width:100%;transition:all .2s;margin-top:6px}
 .submit-btn:hover{background:var(--gold2)}
 .form-divider{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
@@ -951,9 +952,12 @@ function renderOrderForm() {
       <div class="form-group"><label class="form-label">Предзаказ ко времени <span style="text-transform:none;letter-spacing:0;color:var(--muted)">(необязательно)</span></label><input class="form-input" id="fo-preorder" type="time" value="${esc(f.preorder)}"></div>
       <div class="form-group"><label class="form-label">Способ оплаты</label>
         <div class="pay-methods">
-          <button class="pay-btn ${window._pay==='card'?'active':''}" id="p-card" onclick="selPay('card')">💳 Карта онлайн</button>
-          <button class="pay-btn ${window._pay==='cash'?'active':''}" id="p-cash" onclick="selPay('cash')">💵 Наличные</button>
+          <button class="pay-btn ${window._pay==='card'?'active':''}" id="p-card" onclick="selPay('card')">💳 Оплатить онлайн</button>
+          <button class="pay-btn ${window._pay==='later'?'active':''}" id="p-later" onclick="selPay('later')">💵 ${mode==='pickup'?'Оплатить при получении':'Оплатить при доставке'}</button>
         </div>
+        ${window._pay==='later' ? `<div class="pay-info">${mode==='pickup'
+            ? 'При получении можно: наличными, по QR-коду или картой через терминал.'
+            : 'При доставке можно: наличными или по QR-коду курьеру.'}</div>` : ''}
       </div>
       <div class="form-group"><label class="form-label">Комментарий</label><textarea class="form-textarea" id="fo-comment" placeholder="Без острого, домофон не работает...">${esc(f.comment)}</textarea></div>
       <label style="display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted);cursor:pointer;margin-top:4px">
@@ -990,12 +994,7 @@ function persons(n) {
   return 'персон';
 }
 
-function selPay(m) {
-  window._pay = m;
-  ['card','cash'].forEach(k=>{const b=document.getElementById('p-'+k);if(b)b.classList.toggle('active',k===m)});
-  const sb = document.querySelector('.form-body .submit-btn');
-  if (sb && !sb.disabled) sb.textContent = m === 'card' ? 'Оплатить онлайн →' : 'Подтвердить заказ 🎉';
-}
+function selPay(m) { _saveFormState(); window._pay = m; renderOrderForm(); }
 
 function submitOrder() {
   const name = document.getElementById('fo-name').value.trim();
@@ -1535,7 +1534,11 @@ submitOrder = async function() {
   if (btn) { btn.disabled = true; btn.textContent = 'Отправляем...'; }
 
   // ── Примечание для кухни ──
-  const payText = { card:'картой онлайн', cash:'наличные' }[window._pay] || '';
+  const payText = window._pay === 'card'
+    ? 'онлайн картой'
+    : (mode === 'pickup'
+        ? 'при получении (наличные / QR / терминал)'
+        : 'при доставке (наличные / QR)');
   const cutleryText = window._noCutlery ? 'без приборов' : (window._cutlery + ' ' + persons(window._cutlery));
   const parts = [];
   parts.push(mode === 'pickup' ? '🥡 САМОВЫВОЗ (Октябрьская 5)' : '🚴 ДОСТАВКА');
